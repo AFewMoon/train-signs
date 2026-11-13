@@ -37,7 +37,7 @@ Plate4 的比例来自 `Plate4Activity.u1()`：`l = (屏宽 - 20dp) / 5.15`、`m
 
 - 字体：hycsj / times / hyzhj / arial；31 个字段。
 - 布局：`x2()`/`w2()` 的 K/Y/G/H/X/L/u/V/I/N 全部转为 `ctx.k` patch；路徽随车次行数缩放（52.27 → 46.27 → 40.27）。
-- 文本：中文站名用 `c.a.a.f.c.f()` 的估算长度压缩；拼音 `fit(mode 0)`、车次 `fit(mode 1, 1.05)`。
+- 文本：中文站名用 `c.a.a.f.c.f()` 的估算长度压缩；拼音 `fit(mode 0)`、车次 `fit(mode 1, 1.05)`；车次 1–3 行使用 `lineHeightFactor: 1.3` 还原 Android 行盒，避免负 margin 下多行重叠。
 - 开关：左右双站名、双行拼音、中文车次、站名下方车次、贴边、窄拼音栏、扁长字体、左右分别等级、自定义等级文字/颜色。
 
 ### Plate1 / Plate7（套跑1/7）

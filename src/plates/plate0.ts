@@ -590,6 +590,8 @@ export const plate0: PlateSpec = {
     })
 
     // —— 车次 1-3 行（ll_number 在路徽下方居中） ——
+    // lineHeightFactor=1.3 模拟 Android includeFontPadding 的行盒高度：
+    // 只有 marginTop=-3.5 时引擎默认行盒约 1.1em，相邻行基线间距 ~9.5px，小于数字墨迹高度会重叠。
     const trainSize = chineseTrain ? 9 : 6
     patches.set('ll_number', {
       margin: { l: ctx.k(35), t: 0, r: ctx.k(35), b: 0 },
@@ -600,6 +602,7 @@ export const plate0: PlateSpec = {
       font: 'arial',
       visible: !showBelow && trainText1.length > 0,
       fit: { maxScale: 1.05, mode: 1 },
+      lineHeightFactor: 1.3,
     })
     patches.set('tv_number_2', {
       text: trainText2,
@@ -608,6 +611,7 @@ export const plate0: PlateSpec = {
       visible: !showBelow && trainText2.length > 0,
       margin: { t: ctx.k(chineseTrain ? -1 : -3.5) },
       fit: { maxScale: 1.05, mode: 1 },
+      lineHeightFactor: 1.3,
     })
     patches.set('tv_number_3', {
       text: trainText3,
@@ -616,6 +620,7 @@ export const plate0: PlateSpec = {
       visible: !showBelow && trainText3.length > 0,
       margin: { t: ctx.k(-3.5) },
       fit: { maxScale: 1.05, mode: 1 },
+      lineHeightFactor: 1.3,
     })
 
     // —— 站名下方车次（M/N）：仅 S0 时显示 ——

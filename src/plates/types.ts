@@ -50,17 +50,52 @@ export const EXPORT_WIDTH = 1370
 /** 参考设备：360dp 宽屏幕，左右各 9.5dp 边距，APK 中按 340dp 计算水牌宽度。 */
 export const REFERENCE_PLATE_WIDTH_DP = 340
 
+export const MIN_EXPORT_WIDTH = 320
+export const MAX_EXPORT_WIDTH = 8192
+/** Safari 等浏览器的画布面积安全上限。 */
+export const MAX_EXPORT_AREA = 16_000_000
+
+export interface ExportSize {
+  width: number
+  height: number
+  requestedWidth: number
+  clamped: boolean
+  reason?: 'min' | 'max' | 'area'
+}
+
+/** 按模板宽高比计算导出尺寸；宽度限制在 320–8192 且画布面积不超过 16M。 */
+export function exportSize(ratio: number, requestedWidth: number = EXPORT_WIDTH): ExportSize {
+  const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 1
+  const requested = Number.isFinite(requestedWidth) ? Math.round(requestedWidth) : EXPORT_WIDTH
+  let width = Math.max(MIN_EXPORT_WIDTH, Math.min(MAX_EXPORT_WIDTH, requested))
+  let reason: ExportSize['reason']
+  if (width !== requested) reason = requested < MIN_EXPORT_WIDTH ? 'min' : 'max'
+  const areaMax = Math.floor(Math.sqrt(MAX_EXPORT_AREA * safeRatio))
+  if (width > areaMax) {
+    width = Math.max(MIN_EXPORT_WIDTH, areaMax)
+    reason = 'area'
+  }
+  return {
+    width,
+    height: Math.round(width / safeRatio),
+    requestedWidth: requested,
+    clamped: reason !== undefined,
+    reason,
+  }
+}
+
 export function createBuildContext(
   ratio: number,
   designHeight: number,
   spaceStyle: 0 | 1 | 2 = 0,
+  widthPx: number = EXPORT_WIDTH,
 ): PlateBuildContext {
-  const widthPx = EXPORT_WIDTH
-  const heightPx = widthPx / ratio
-  const dpScale = widthPx / REFERENCE_PLATE_WIDTH_DP
+  const width = Number.isFinite(widthPx) && widthPx > 0 ? widthPx : EXPORT_WIDTH
+  const heightPx = width / ratio
+  const dpScale = width / REFERENCE_PLATE_WIDTH_DP
   const unitScale = heightPx / designHeight
   return {
-    widthPx,
+    widthPx: width,
     heightPx,
     spaceStyle,
     dp: (value: number) => value * dpScale,

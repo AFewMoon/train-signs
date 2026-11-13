@@ -1,6 +1,6 @@
 # 第三方素材声明
 
-本项目为学习交流用途的非官方复刻，以下素材提取自 Android 应用《列车水牌制作》v9.5（`org.piaoyu.directionplatemaker`），版权归各自权利人所有，本项目不对其主张任何权利：
+本项目为学习交流用途的非官方复刻。**代码部分**以 AGPL-3.0-only 授权（见 [LICENSE](LICENSE)）；下列素材提取自 Android 应用《列车水牌制作》v9.5（`org.piaoyu.directionplatemaker`），**不属于 AGPL 授权范围**，版权归各自权利人所有，本项目不对其主张任何权利：
 
 ## 字体（`public/fonts/`）
 
@@ -27,3 +27,7 @@
 ## 免责
 
 本项目与原作者、中国国家铁路集团有限公司无隶属或合作关系。生成的图片仅供个人学习、设计练习使用；请勿用于伪造铁路运营信息、冒充官方标识或任何违法用途。
+
+## 第三方依赖
+
+Vue（MIT）、Vite（MIT）、idb-keyval（Apache-2.0）、opentype.js（MIT）。依赖许可证以各自包内声明为准。

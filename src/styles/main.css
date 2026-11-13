@@ -515,3 +515,60 @@ textarea {
   opacity: 0;
   transform: translate(-50%, 8px);
 }
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+
+.preset-btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-btn:hover {
+  border-color: var(--rail-blue);
+  color: var(--rail-blue);
+}
+
+.preset-btn.active {
+  border-color: var(--rail-blue);
+  background: var(--rail-blue);
+  color: #fff;
+}
+
+.setting-number {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.number-input {
+  width: 110px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+.setting-suffix {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.size-preview strong {
+  color: var(--text);
+}
+
+.clamp-note {
+  color: #b3261e;
+}

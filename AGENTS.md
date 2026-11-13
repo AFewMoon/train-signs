@@ -155,7 +155,37 @@ npm run sync
 5. 字体、路徽、封面来自原 App，公开仓库内嵌是用户的明确决定；不要“顺手”移除，也不要把版权声明删掉。
 6. 不要把 `analysis/`、`dist/`、`node_modules/`、`.npm-cache/` 提交；预览图只提交 `docs/previews/` 下精选几张。
 
-## 8. 常用命令速查
+## 8. 导出（分辨率 / SVG）与许可证经验
+
+### 自定义分辨率
+
+- `src/plates/types.ts`：
+  - `createBuildContext(ratio, designHeight, spaceStyle?, widthPx?)` 是唯一的尺寸入口；所有布局/字体度量按宽度等比缩放，不要另外改字号或 margin。
+  - `exportSize(ratio, requestedWidth)` 统一夹取：320–8192px、画布面积 ≤ 16,000,000px（Safari 安全线），返回 `{width,height,clamped,reason}`。
+- 预览固定 1370px；导出时才用 `renderPlateCanvas(..., {widthPx})` 重新排版，避免输入时高分辨率重绘卡顿。
+- 图库始终存 PNG（按导出分辨率），SVG/JPEG 导出也留档。
+- `Settings` 增加字段时必须处理旧 localStorage：`loadSettings()` 做迁移与默认值。
+
+### SVG（真矢量）
+
+- 依赖 `opentype.js@2`（MIT）。Vite 默认可能解析到 UMD，动态 import 只有 default 导出；在 `vite.config.ts` 用 alias 指向 `node_modules/opentype.js/dist/opentype.mjs`，并在代码里兼容 `mod.parse ?? mod.default?.parse`。
+- 文字位置必须与 Canvas 完全一致：`render.ts` 的 `computeTextRun()` 同时服务 `drawTextBox()` 与 SVG；逐字 x 用 Canvas `measureText` 的**前缀宽度**（含 kerning），再在组上 `scale(scaleX,1)`。
+- 字形路径：`font.charToGlyph(char).getPath(0,0,sizePx).toPathData(2)`；`charToGlyphIndex===0` / 字体解析失败 / `sans` → 整个文字框回退为离屏 canvas 位图（`drawTextBox` 复用）。
+- 每个 Box 输出 `<g clip-path>` + `<clipPath>`，与 Canvas 逐层裁剪对应；图标以 data URI `<image>` 内嵌，`centerCrop` 用 `preserveAspectRatio="xMidYMid slice"`；SVG 不允许外链。
+- 验证方式：Node 侧用 `@napi-rs/canvas` + `opentype` 构造 host，`serializeBox()` 生成 SVG，再用 `loadImage(Buffer.from(svg))` 光栅化对比（本仓库已验证可渲染）；单测注入假 host 检查结构。
+
+### 许可证
+
+- 代码 AGPL-3.0-only：根 `LICENSE` 用 SPDX 文本（可通过 `api.github.com/repos/spdx/license-list-data/contents/text/AGPL-3.0-only.txt` 获取），`package.json` 的 `license`/`author`、README、NOTICE、页脚同步。
+- `public/fonts|icons|covers|data` 是第三方素材，**明确不纳入 AGPL**，不要删除 NOTICE 中的例外声明。
+- 用 PowerShell `ConvertTo-Json` 改 `package.json` 会把 `&&` 转成 `\u0026` 并重排格式；优先手写 JSON 或只做文本替换。
+
+### 行高与重叠
+
+- 多行文本（如 Plate0 三行车次）必须给 `lineHeightFactor`（arial 约 1.3）。默认 `ascent+descent≈1.1em` 配合负 margin 会压字；`gravity=center` 的固定高度容器中行盒增高对称抵消，单行位置不变。
+- 修改行高后对比默认预览 SHA；三行变体必须目检。
+
+## 9. 常用命令速查
 
 ```powershell
 $env:npm_config_cache="$PWD\.npm-cache"

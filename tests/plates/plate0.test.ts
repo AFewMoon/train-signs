@@ -144,3 +144,35 @@ describe('标准/套跑（Plate0）开关分支', () => {
     expect(byId(box, 'tv_end_en').bg).toBe('#193ed1')
   })
 })
+
+describe('标准/套跑（Plate0）多行车次行距', () => {
+  // 回归：tv_number_1/2/3 必须带 lineHeightFactor，否则相邻行基线间距 < 0.6em 会重叠。
+  const box = render({
+    ...plate0.defaults,
+    trainNumber1: 'K113/4',
+    trainNumber2: 'K114/3',
+    trainNumber3: 'K115/2',
+  })
+
+  it('三行车次都可见且文字正确', () => {
+    const line1 = byId(box, 'tv_number_1')
+    const line2 = byId(box, 'tv_number_2')
+    const line3 = byId(box, 'tv_number_3')
+    expect(line1.visible).toBe(true)
+    expect(line2.visible).toBe(true)
+    expect(line3.visible).toBe(true)
+    expect(line1.text?.value).toBe('K113/4')
+    expect(line2.text?.value).toBe('K114/3')
+    expect(line3.text?.value).toBe('K115/2')
+  })
+
+  it('相邻行 y 间距大于 0.6 倍字号（lineHeightFactor=1 时约 0.42 倍会失败）', () => {
+    const line1 = byId(box, 'tv_number_1')
+    const line2 = byId(box, 'tv_number_2')
+    const line3 = byId(box, 'tv_number_3')
+    const size = line1.text?.sizePx ?? 0
+    expect(size).toBeGreaterThan(0)
+    expect(line2.y - line1.y).toBeGreaterThan(0.6 * size)
+    expect(line3.y - line2.y).toBeGreaterThan(0.6 * size)
+  })
+})

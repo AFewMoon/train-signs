@@ -9,7 +9,9 @@
         <button class="btn ghost" type="button" @click="showSettings = true">设置</button>
         <button class="btn ghost" type="button" @click="showGallery = true">图库</button>
         <button class="btn ghost" type="button" @click="reset">重置</button>
-        <button class="btn primary" type="button" @click="download">下载图片</button>
+        <button class="btn primary" type="button" :disabled="exporting" @click="download">
+          {{ exporting ? '导出中…' : '下载' }}
+        </button>
       </div>
     </header>
 
@@ -34,7 +36,9 @@
           <canvas ref="canvasRef" class="plate-canvas" />
         </div>
         <p class="preview-meta">
-          {{ current.name }} · {{ sizeText }} · {{ current.ratio.toFixed(3) }}:1
+          {{ current.name }} · 预览 {{ sizeText }} · {{ current.ratio.toFixed(3) }}:1
+          <br />
+          导出 {{ exportSizeText }} · {{ formatLabel }}
         </p>
       </div>
 
@@ -102,7 +106,15 @@
     </section>
 
     <footer class="app-footer">
-      非官方学习交流项目 · 字体与素材版权归原权利人所有 · 详见 NOTICE
+      非官方学习交流项目 · 字体与素材版权归原权利人所有 · 详见 NOTICE ·
+      <a href="https://github.com/AFewMoon/train-signs" target="_blank" rel="noreferrer">源码</a>
+      以
+      <a
+        href="https://github.com/AFewMoon/train-signs/blob/main/LICENSE"
+        target="_blank"
+        rel="noreferrer"
+      >AGPL-3.0</a>
+      授权
     </footer>
 
     <Transition name="toast">
@@ -112,6 +124,7 @@
     <SettingsDialog
       v-model:settings="settings"
       :open="showSettings"
+      :ratio="current.ratio"
       @close="showSettings = false"
       @update:settings="applySettings"
     />
@@ -124,7 +137,9 @@ import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { PLATES, getPlate } from './plates'
 import type { PlateValues } from './core/types'
 import type { PlateField } from './plates/types'
-import { drawPlate, exportCanvas } from './core/plate-render'
+import { drawPlate, exportCanvas, renderPlateCanvas, downloadBlob, canvasToBlob } from './core/plate-render'
+import { buildSvg } from './core/svg'
+import { exportSize } from './plates/types'
 import { assetUrl } from './core/render'
 import { loadPinyin, toPinyin } from './core/pinyin'
 import {
@@ -158,6 +173,10 @@ function showToast(message: string): void {
 }
 
 const sizeText = computed(() => (size.w ? `${size.w} × ${size.h}px` : ''))
+const exportSizeText = computed(() => {
+  const target = exportSize(current.value.ratio, settings.exportWidth)
+  return `${target.width} × ${target.height}px`
+})
 
 function strValue(key: string): string {
   const value = values[key]
@@ -233,40 +252,62 @@ function autoPinyin(field: PlateField): void {
 function applySettings(next: Settings): void {
   settings.spaceStyle = next.spaceStyle
   settings.format = next.format
-  showSettings.value = false
+  settings.exportWidth = next.exportWidth
   void render()
 }
 
-async function saveToGallery(): Promise<void> {
-  const canvas = canvasRef.value
-  if (!canvas || !size.w) return
-  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
+const exporting = ref(false)
+const formatLabel = computed(() =>
+  settings.format === 'svg' ? 'SVG' : settings.format === 'jpeg' ? 'JPEG' : 'PNG',
+)
+
+async function saveToGallery(canvas: HTMLCanvasElement, width: number, height: number): Promise<void> {
+  const blob = await canvasToBlob(canvas, 'png')
   if (!blob) return
-  const name = `水牌_${formatTimestamp()}`
   await addGalleryItem({
-    name,
+    name: `水牌_${formatTimestamp()}`,
     plateName: current.value.name,
-    width: size.w,
-    height: size.h,
+    width,
+    height,
     blob,
   })
 }
 
 async function download(): Promise<void> {
-  const canvas = canvasRef.value
-  if (!canvas) return
+  if (exporting.value) return
   for (const field of current.value.fields) {
     if (field.required && !strValue(field.key).trim()) {
       showToast(`请输入${field.label}`)
       return
     }
   }
-  const car = strValue('carNumber')
-  const safeName = current.value.name.replace(/[\\/:*?"<>|]/g, '_')
-  const name = `水牌_${safeName}${car ? `_${car}` : ''}`
-  exportCanvas(canvas, settings.format, name)
-  await saveToGallery().catch(() => undefined)
-  showToast('图片已生成，可下载或在图库中查看')
+  exporting.value = true
+  try {
+    const snapshot = { ...values }
+    const target = exportSize(current.value.ratio, settings.exportWidth)
+    const car = strValue('carNumber')
+    const safeName = current.value.name.replace(/[\\/:*?"<>|]/g, '_')
+    const name = `水牌_${safeName}${car ? `_${car}` : ''}_${target.width}x${target.height}`
+    const options = { spaceStyle: settings.spaceStyle, widthPx: target.width }
+
+    if (settings.format === 'svg') {
+      const { svg } = await buildSvg(current.value, snapshot, options)
+      downloadBlob(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }), `${name}.svg`)
+      const { canvas, width, height } = await renderPlateCanvas(current.value, snapshot, options)
+      await saveToGallery(canvas, width, height)
+      showToast('SVG 已生成，PNG 已存入图库')
+    } else {
+      const { canvas, width, height } = await renderPlateCanvas(current.value, snapshot, options)
+      exportCanvas(canvas, settings.format, name)
+      await saveToGallery(canvas, width, height)
+      showToast('图片已生成，可下载或在图库中查看')
+    }
+  } catch (error) {
+    console.error(error)
+    showToast(`导出失败：${error instanceof Error ? error.message : '未知错误'}`)
+  } finally {
+    exporting.value = false
+  }
 }
 
 watch(settings, (next) => {

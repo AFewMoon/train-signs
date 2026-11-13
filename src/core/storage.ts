@@ -1,24 +1,29 @@
 import { del, get, keys, set } from 'idb-keyval'
 
 export type SpaceStyle = 0 | 1 | 2
-export type ImageFormat = 'png' | 'jpeg'
+export type ImageFormat = 'png' | 'jpeg' | 'svg'
 
 export interface Settings {
   spaceStyle: SpaceStyle
   format: ImageFormat
+  /** 导出宽度（px），高度按模板比例自动计算。 */
+  exportWidth: number
 }
 
 const SETTINGS_KEY = 'train-signs:settings'
+const DEFAULT_EXPORT_WIDTH = 1370
 
 export function loadSettings(): Settings {
-  const fallback: Settings = { spaceStyle: 0, format: 'png' }
+  const fallback: Settings = { spaceStyle: 0, format: 'png', exportWidth: DEFAULT_EXPORT_WIDTH }
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
     if (!raw) return fallback
     const parsed = JSON.parse(raw) as Partial<Settings>
+    const width = Number(parsed.exportWidth)
     return {
       spaceStyle: parsed.spaceStyle === 1 || parsed.spaceStyle === 2 ? parsed.spaceStyle : 0,
-      format: parsed.format === 'jpeg' ? 'jpeg' : 'png',
+      format: parsed.format === 'jpeg' || parsed.format === 'svg' ? parsed.format : 'png',
+      exportWidth: Number.isFinite(width) ? Math.round(width) : DEFAULT_EXPORT_WIDTH,
     }
   } catch {
     return fallback

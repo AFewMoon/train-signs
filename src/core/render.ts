@@ -72,24 +72,34 @@ function drawImage(ctx: CanvasRenderingContext2D, box: Box): void {
   ctx.restore()
 }
 
-function drawText(ctx: CanvasRenderingContext2D, box: Box): void {
-  const t = box.text
-  if (!t || !t.value) return
+export interface TextRunLayout {
+  contentX: number
+  contentY: number
+  contentW: number
+  contentH: number
+  glyphLine: number
+  lineHeight: number
+  textWidth: number
+  originX: number
+  baseline: number
+}
+
+/** 计算一个 TextView 的文字绘制位置；Canvas 与 SVG 导出共用，保证几何一致。 */
+export function computeTextRun(
+  box: Box,
+  rawWidth: number,
+  ascent: number,
+  descent: number,
+): TextRunLayout {
+  const t = box.text!
   const contentX = box.x + box.padding.l
   const contentY = box.y + box.padding.t
   const contentW = Math.max(0, box.w - box.padding.l - box.padding.r)
   const contentH = Math.max(0, box.h - box.padding.t - box.padding.b)
-  ctx.font = `${t.bold ? '700 ' : ''}${t.sizePx}px ${fontFamily(t.font)}`
-  ctx.fillStyle = t.color
-  ctx.textBaseline = 'alphabetic'
-  ctx.textAlign = 'left'
-  const metrics = ctx.measureText(t.value || '中')
-  const ascent = metrics.fontBoundingBoxAscent ?? t.sizePx * 0.88
-  const descent = metrics.fontBoundingBoxDescent ?? t.sizePx * 0.22
   const glyphLine = ascent + descent
   const lineHeight = glyphLine * (t.lineHeightFactor ?? 1)
   const topPad = (lineHeight - glyphLine) / 2
-  const textWidth = metrics.width * t.scaleX
+  const textWidth = rawWidth * t.scaleX
   const parts = t.gravity.split('|')
   const centerH = parts.includes('center') || parts.includes('center_horizontal')
   const centerV = parts.includes('center') || parts.includes('center_vertical')
@@ -105,11 +115,26 @@ function drawText(ctx: CanvasRenderingContext2D, box: Box): void {
   if (centerV) baseline = contentY + (contentH - lineHeight) / 2 + topPad + ascent
   else if (bottomV) baseline = contentY + contentH - lineHeight + topPad + ascent
   baseline += t.baselineOffset ?? 0
+  return { contentX, contentY, contentW, contentH, glyphLine, lineHeight, textWidth, originX, baseline }
+}
+
+/** 在给定 canvas 上绘制单个 TextView（含裁剪）；供 SVG 缺字回退复用。 */
+export function drawTextBox(ctx: CanvasRenderingContext2D, box: Box): void {
+  const t = box.text
+  if (!t || !t.value) return
+  ctx.font = `${t.bold ? '700 ' : ''}${t.sizePx}px ${fontFamily(t.font)}`
+  ctx.fillStyle = t.color
+  ctx.textBaseline = 'alphabetic'
+  ctx.textAlign = 'left'
+  const metrics = ctx.measureText(t.value || '中')
+  const ascent = metrics.fontBoundingBoxAscent ?? t.sizePx * 0.88
+  const descent = metrics.fontBoundingBoxDescent ?? t.sizePx * 0.22
+  const run = computeTextRun(box, metrics.width, ascent, descent)
   ctx.save()
   ctx.beginPath()
-  ctx.rect(contentX, contentY, contentW, contentH)
+  ctx.rect(run.contentX, run.contentY, run.contentW, run.contentH)
   ctx.clip()
-  ctx.translate(originX, baseline)
+  ctx.translate(run.originX, run.baseline)
   ctx.scale(t.scaleX, 1)
   ctx.fillText(t.value, 0, 0)
   ctx.restore()
@@ -131,7 +156,7 @@ export function renderBox(ctx: CanvasRenderingContext2D, box: Box): void {
     ctx.strokeRect(box.x + 0.5, box.y + 0.5, Math.max(0, box.w - 1), Math.max(0, box.h - 1))
   }
   if (box.image) drawImage(ctx, box)
-  if (box.text) drawText(ctx, box)
+  if (box.text) drawTextBox(ctx, box)
   for (const child of box.children) renderBox(ctx, child)
   ctx.restore()
 }
