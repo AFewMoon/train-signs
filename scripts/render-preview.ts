@@ -1,14 +1,14 @@
 // 在 Node 中用 Skia 渲染水牌预览，便于在无浏览器环境下校验布局。
 // 用法：npm run preview -- plate8 plate9
-import { createCanvas, GlobalFonts } from '@napi-rs/canvas'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { createCanvas, GlobalFonts, loadImage } from '@napi-rs/canvas'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { PLATES, getPlate } from '../src/plates/index'
 import { createBuildContext } from '../src/plates/types'
 import { layoutPlate } from '../src/core/layout'
-import { renderBox } from '../src/core/render'
+import { putImage, renderBox } from '../src/core/render'
 import { FONTS } from '../src/core/fonts'
-import type { FontKey, Measurer } from '../src/core/types'
+import type { Box, FontKey, Measurer } from '../src/core/types'
 
 for (const def of Object.values(FONTS)) {
   GlobalFonts.registerFromPath(join('public', 'fonts', def.file), def.family)
@@ -42,10 +42,27 @@ for (const spec of plates) {
     heightPx: ctxBuild.heightPx,
     dpScale: ctxBuild.widthPx / 340,
     unitScale: ctxBuild.heightPx / spec.designHeight,
+    spaceStyle: 0,
     measurer,
     patches,
   })
   const canvas = createCanvas(Math.round(ctxBuild.widthPx), Math.round(ctxBuild.heightPx))
+  const images = new Set<string>()
+  const collect = (node: Box): void => {
+    if (node.image) images.add(node.image.src)
+    node.children.forEach(collect)
+  }
+  collect(box)
+  await Promise.all(
+    [...images].map(async (src) => {
+      try {
+        const img = await loadImage(readFileSync(join('public', src)))
+        putImage(src, img as unknown as CanvasImageSource & { width: number; height: number })
+      } catch (error) {
+        console.warn(`图片加载失败：${src}`, error)
+      }
+    }),
+  )
   const ctx = canvas.getContext('2d') as unknown as CanvasRenderingContext2D
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   renderBox(ctx, box)

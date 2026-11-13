@@ -115,90 +115,6 @@
           ]
         },
         {
-          "tag": "RelativeLayout",
-          "attrs": {
-            "android:layout_width": "0dp",
-            "android:layout_height": "match_parent",
-            "android:layout_weight": "1"
-          },
-          "children": [
-            {
-              "tag": "TextView",
-              "attrs": {
-                "android:textSize": "25.9dp",
-                "android:textColor": "#000000",
-                "android:gravity": "center",
-                "android:id": "tv_middle",
-                "android:layout_width": "match_parent",
-                "android:layout_height": "wrap_content",
-                "android:layout_marginTop": "-1.5dp",
-                "android:maxLines": "1",
-                "android:layout_above": "@+id/tv_middle_en"
-              },
-              "children": []
-            },
-            {
-              "tag": "TextView",
-              "attrs": {
-                "android:textSize": "10.85dp",
-                "android:textColor": "#ffffff",
-                "android:gravity": "center",
-                "android:id": "tv_middle_en",
-                "android:background": "#ff3145",
-                "android:paddingLeft": "1.5dp",
-                "android:paddingRight": "1.5dp",
-                "android:layout_width": "match_parent",
-                "android:layout_height": "14.05dp",
-                "android:maxLines": "1",
-                "android:layout_alignParentBottom": "true"
-              },
-              "children": []
-            }
-          ]
-        },
-        {
-          "tag": "RelativeLayout",
-          "attrs": {
-            "android:layout_width": "0dp",
-            "android:layout_height": "match_parent",
-            "android:layout_weight": "1"
-          },
-          "children": [
-            {
-              "tag": "TextView",
-              "attrs": {
-                "android:textSize": "25.9dp",
-                "android:textColor": "#000000",
-                "android:gravity": "center",
-                "android:id": "tv_end",
-                "android:layout_width": "match_parent",
-                "android:layout_height": "wrap_content",
-                "android:layout_marginTop": "-1.5dp",
-                "android:maxLines": "1",
-                "android:layout_above": "@+id/tv_end_en"
-              },
-              "children": []
-            },
-            {
-              "tag": "TextView",
-              "attrs": {
-                "android:textSize": "10.85dp",
-                "android:textColor": "#ffffff",
-                "android:gravity": "center",
-                "android:id": "tv_end_en",
-                "android:background": "#ff3145",
-                "android:paddingLeft": "1.5dp",
-                "android:paddingRight": "1.5dp",
-                "android:layout_width": "match_parent",
-                "android:layout_height": "14.05dp",
-                "android:maxLines": "1",
-                "android:layout_alignParentBottom": "true"
-              },
-              "children": []
-            }
-          ]
-        },
-        {
           "tag": "LinearLayout",
           "attrs": {
             "android:gravity": "bottom",
@@ -260,6 +176,48 @@
           ]
         },
         {
+          "tag": "RelativeLayout",
+          "attrs": {
+            "android:layout_width": "0dp",
+            "android:layout_height": "match_parent",
+            "android:layout_weight": "1"
+          },
+          "children": [
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "25.9dp",
+                "android:textColor": "#000000",
+                "android:gravity": "center",
+                "android:id": "tv_middle",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:layout_marginTop": "-1.5dp",
+                "android:maxLines": "1",
+                "android:layout_above": "@+id/tv_middle_en"
+              },
+              "children": []
+            },
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "10.85dp",
+                "android:textColor": "#ffffff",
+                "android:gravity": "center",
+                "android:id": "tv_middle_en",
+                "android:background": "#ff3145",
+                "android:paddingLeft": "1.5dp",
+                "android:paddingRight": "1.5dp",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "14.05dp",
+                "android:maxLines": "1",
+                "android:layout_alignParentBottom": "true"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
           "tag": "LinearLayout",
           "attrs": {
             "android:gravity": "bottom",
@@ -315,6 +273,48 @@
                 "android:layout_height": "wrap_content",
                 "android:layout_marginTop": "-4.2dp",
                 "android:maxLines": "1"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "tag": "RelativeLayout",
+          "attrs": {
+            "android:layout_width": "0dp",
+            "android:layout_height": "match_parent",
+            "android:layout_weight": "1"
+          },
+          "children": [
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "25.9dp",
+                "android:textColor": "#000000",
+                "android:gravity": "center",
+                "android:id": "tv_end",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:layout_marginTop": "-1.5dp",
+                "android:maxLines": "1",
+                "android:layout_above": "@+id/tv_end_en"
+              },
+              "children": []
+            },
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "10.85dp",
+                "android:textColor": "#ffffff",
+                "android:gravity": "center",
+                "android:id": "tv_end_en",
+                "android:background": "#ff3145",
+                "android:paddingLeft": "1.5dp",
+                "android:paddingRight": "1.5dp",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "14.05dp",
+                "android:maxLines": "1",
+                "android:layout_alignParentBottom": "true"
               },
               "children": []
             }

@@ -36,6 +36,19 @@
           "children": []
         },
         {
+          "tag": "View",
+          "attrs": {
+            "android:layout_gravity": "center_vertical",
+            "android:id": "v_left",
+            "android:background": "#cf4a53",
+            "android:layout_width": "14dp",
+            "android:layout_height": "4dp",
+            "android:layout_marginLeft": "5dp",
+            "android:layout_marginRight": "5dp"
+          },
+          "children": []
+        },
+        {
           "tag": "TextView",
           "attrs": {
             "android:textSize": "27dp",
@@ -47,19 +60,6 @@
             "android:textScaleX": "0.9",
             "android:maxLines": "1",
             "android:layout_weight": "1"
-          },
-          "children": []
-        },
-        {
-          "tag": "View",
-          "attrs": {
-            "android:layout_gravity": "center_vertical",
-            "android:id": "v_left",
-            "android:background": "#cf4a53",
-            "android:layout_width": "14dp",
-            "android:layout_height": "4dp",
-            "android:layout_marginLeft": "5dp",
-            "android:layout_marginRight": "5dp"
           },
           "children": []
         }
@@ -94,6 +94,19 @@
           "children": []
         },
         {
+          "tag": "View",
+          "attrs": {
+            "android:layout_gravity": "center_vertical",
+            "android:id": "v_right",
+            "android:background": "#cf4a53",
+            "android:layout_width": "14dp",
+            "android:layout_height": "4dp",
+            "android:layout_marginLeft": "5dp",
+            "android:layout_marginRight": "5dp"
+          },
+          "children": []
+        },
+        {
           "tag": "TextView",
           "attrs": {
             "android:textSize": "27dp",
@@ -107,21 +120,21 @@
             "android:layout_weight": "1"
           },
           "children": []
-        },
-        {
-          "tag": "View",
-          "attrs": {
-            "android:layout_gravity": "center_vertical",
-            "android:id": "v_right",
-            "android:background": "#cf4a53",
-            "android:layout_width": "14dp",
-            "android:layout_height": "4dp",
-            "android:layout_marginLeft": "5dp",
-            "android:layout_marginRight": "5dp"
-          },
-          "children": []
         }
       ]
+    },
+    {
+      "tag": "ImageView",
+      "attrs": {
+        "android:id": "iv_icon",
+        "android:layout_width": "46.93dp",
+        "android:layout_height": "46.93dp",
+        "android:layout_marginTop": "6.23dp",
+        "android:src": "icons/railway/ic_plate_01.png",
+        "android:scaleType": "centerCrop",
+        "android:layout_centerHorizontal": "true"
+      },
+      "children": []
     },
     {
       "tag": "LinearLayout",
@@ -144,23 +157,6 @@
             "android:textColor": "#ffffff",
             "android:gravity": "center",
             "android:id": "tv_start_en_1",
-            "android:background": "#ff3145",
-            "android:paddingLeft": "1.5dp",
-            "android:paddingRight": "1.5dp",
-            "android:layout_width": "0dp",
-            "android:layout_height": "match_parent",
-            "android:maxLines": "1",
-            "android:layout_weight": "1"
-          },
-          "children": []
-        },
-        {
-          "tag": "TextView",
-          "attrs": {
-            "android:textSize": "9.5dp",
-            "android:textColor": "#ffffff",
-            "android:gravity": "center",
-            "android:id": "tv_end_en_1",
             "android:background": "#ff3145",
             "android:paddingLeft": "1.5dp",
             "android:paddingRight": "1.5dp",
@@ -228,6 +224,23 @@
               "children": []
             }
           ]
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "9.5dp",
+            "android:textColor": "#ffffff",
+            "android:gravity": "center",
+            "android:id": "tv_end_en_1",
+            "android:background": "#ff3145",
+            "android:paddingLeft": "1.5dp",
+            "android:paddingRight": "1.5dp",
+            "android:layout_width": "0dp",
+            "android:layout_height": "match_parent",
+            "android:maxLines": "1",
+            "android:layout_weight": "1"
+          },
+          "children": []
         }
       ]
     },
@@ -252,23 +265,6 @@
             "android:textColor": "#ffffff",
             "android:gravity": "center",
             "android:id": "tv_start_en_2",
-            "android:background": "#ff3145",
-            "android:paddingLeft": "1.5dp",
-            "android:paddingRight": "1.5dp",
-            "android:layout_width": "0dp",
-            "android:layout_height": "match_parent",
-            "android:maxLines": "1",
-            "android:layout_weight": "1"
-          },
-          "children": []
-        },
-        {
-          "tag": "TextView",
-          "attrs": {
-            "android:textSize": "9.5dp",
-            "android:textColor": "#ffffff",
-            "android:gravity": "center",
-            "android:id": "tv_end_en_2",
             "android:background": "#ff3145",
             "android:paddingLeft": "1.5dp",
             "android:paddingRight": "1.5dp",
@@ -334,21 +330,25 @@
               "children": []
             }
           ]
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "9.5dp",
+            "android:textColor": "#ffffff",
+            "android:gravity": "center",
+            "android:id": "tv_end_en_2",
+            "android:background": "#ff3145",
+            "android:paddingLeft": "1.5dp",
+            "android:paddingRight": "1.5dp",
+            "android:layout_width": "0dp",
+            "android:layout_height": "match_parent",
+            "android:maxLines": "1",
+            "android:layout_weight": "1"
+          },
+          "children": []
         }
       ]
-    },
-    {
-      "tag": "ImageView",
-      "attrs": {
-        "android:id": "iv_icon",
-        "android:layout_width": "46.93dp",
-        "android:layout_height": "46.93dp",
-        "android:layout_marginTop": "6.23dp",
-        "android:src": "icons/railway/ic_plate_01.png",
-        "android:scaleType": "centerCrop",
-        "android:layout_centerHorizontal": "true"
-      },
-      "children": []
     },
     {
       "tag": "TextView",

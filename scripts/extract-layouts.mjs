@@ -1,7 +1,7 @@
 // 从 jadx 解码后的资源中提取各水牌预览布局，生成 Web 端可用的布局 JSON。
 // 运行前提：analysis/jadx 已由 jadx 生成（见 docs/re/README.md）。
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { join } from 'node:path'
 import { XMLParser } from 'fast-xml-parser'
 
 const SRC = 'analysis/jadx/resources/res'
@@ -12,6 +12,7 @@ const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '',
   parseTagValue: false,
+  preserveOrder: true,
   trimValues: true,
 })
 
@@ -28,19 +29,17 @@ const colors = parseValues('colors.xml')
 const strings = parseValues('strings.xml')
 const dimen = parseValues('dimens.xml')
 
-function resolveRef(value, kind = '') {
+function resolveRef(value) {
   if (typeof value !== 'string') return value
   if (value === '@android:color/white') return '#ffffff'
   if (value === '@android:color/black') return '#000000'
   if (value.startsWith('@color/')) {
-    const key = `color:${value.slice(7)}`
-    const v = colors.get(key)
+    const v = colors.get(`color:${value.slice(7)}`)
     if (v === undefined) throw new Error(`missing color ${value}`)
     return v.startsWith('@color/') ? colors.get(`color:${v.slice(7)}`) : v
   }
   if (value.startsWith('@string/')) {
-    const key = `string:${value.slice(8)}`
-    const v = strings.get(key)
+    const v = strings.get(`string:${value.slice(8)}`)
     if (v === undefined) throw new Error(`missing string ${value}`)
     return v
   }
@@ -50,10 +49,7 @@ function resolveRef(value, kind = '') {
     return v
   }
   if (/^#[0-9a-fA-F]{6,8}$/.test(value)) return value
-  if (value.startsWith('@mipmap/')) {
-    const name = value.slice(8)
-    return `icons/railway/${name}.png`
-  }
+  if (value.startsWith('@mipmap/')) return `icons/railway/${value.slice(8)}.png`
   if (value.startsWith('@drawable/')) {
     const name = value.slice(10)
     if (name === 'bg_plate') return 'border'
@@ -62,37 +58,33 @@ function resolveRef(value, kind = '') {
   return value
 }
 
-function normalizeNode(tag, node) {
-  const attrs = {}
-  const children = []
-  for (const [key, value] of Object.entries(node)) {
-    if (typeof value === 'string' || typeof value === 'number') {
-      attrs[key] = value
-    } else if (key !== '?xml') {
-      const list = Array.isArray(value) ? value : [value]
-      for (const item of list) {
-        if (item && typeof item === 'object') children.push(normalizeNode(key, item))
+/** preserveOrder 解析结果 → 稳定的 { tag, attrs, children } 树，保留文档顺序。 */
+function normalizeNodes(list) {
+  const out = []
+  for (const entry of list) {
+    if (!entry || typeof entry !== 'object') continue
+    const tag = Object.keys(entry).find((key) => key !== ':@' && key !== '#text' && key !== '?xml')
+    if (!tag) continue
+    const attrs = { ...(entry[':@'] ?? {}) }
+    for (const key of Object.keys(attrs)) {
+      if (key === 'android:background' || key === 'android:textColor' || key === 'android:src' || key === 'android:text') {
+        attrs[key] = resolveRef(attrs[key])
       }
     }
-  }
-  for (const key of Object.keys(attrs)) {
-    if (key === 'android:background' || key === 'android:textColor' || key === 'android:src') {
-      attrs[key] = resolveRef(attrs[key])
-    } else if (key === 'android:text') {
-      attrs[key] = resolveRef(attrs[key])
+    if (attrs['android:id']) {
+      attrs['android:id'] = attrs['android:id'].replace('@+id/', '').replace('@id/', '')
     }
+    out.push({ tag, attrs, children: normalizeNodes(entry[tag] ?? []) })
   }
-  if (attrs['android:id']) attrs['android:id'] = attrs['android:id'].replace('@+id/', '').replace('@id/', '')
-  return { tag, attrs, children }
+  return out
 }
 
-function findPreview(node, depth = 0) {
-  if (!node) return null
+function findPreview(node) {
   if (node.attrs['android:id'] && ['rl_plate', 'll_plate', 'rl_plate_main', 'll_plate_main'].includes(node.attrs['android:id'])) {
     return node
   }
   for (const child of node.children) {
-    const found = findPreview(child, depth + 1)
+    const found = findPreview(child)
     if (found) return found
   }
   return null
@@ -105,9 +97,12 @@ mkdirSync(join(PUBLIC, 'covers'), { recursive: true })
 const layoutDir = join(SRC, 'layout')
 const summary = []
 for (const file of readdirSync(layoutDir).filter((f) => /^activity_plate_\d\.xml$/.test(f))) {
-  const doc = parser.parse(readFileSync(join(layoutDir, file), 'utf8'))
-  const root = normalizeNode('root', doc)
-  const preview = findPreview(root)
+  const doc = normalizeNodes(parser.parse(readFileSync(join(layoutDir, file), 'utf8')))
+  let preview = null
+  for (const node of doc) {
+    preview = findPreview(node)
+    if (preview) break
+  }
   if (!preview) {
     console.log(`${file}: 未找到预览容器，跳过`)
     continue

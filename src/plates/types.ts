@@ -1,6 +1,6 @@
 import type { FontKey, LayoutNode, PatchMap, PlateValues } from '../core/types'
 
-export type FieldKind = 'text' | 'textarea' | 'number' | 'select'
+export type FieldKind = 'text' | 'textarea' | 'number' | 'select' | 'checkbox'
 
 export interface FieldOption {
   label: string
@@ -15,6 +15,11 @@ export interface PlateField {
   placeholder?: string
   hint?: string
   options?: FieldOption[]
+  /** 该字段为拼音栏时，指向对应的中文站名字段，用于自动注音。 */
+  pinyinOf?: string
+  group?: string
+  /** 生成图片前必填。 */
+  required?: boolean
 }
 
 export interface PlateBuildContext {
@@ -66,4 +71,8 @@ export function createBuildContext(
 export function str(values: PlateValues, key: string): string {
   const value = values[key]
   return typeof value === 'string' ? value : ''
+}
+
+export function bool(values: PlateValues, key: string): boolean {
+  return values[key] === true
 }

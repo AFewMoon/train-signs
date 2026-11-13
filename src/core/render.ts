@@ -27,6 +27,11 @@ export function loadImage(src: string): Promise<HTMLImageElement | null> {
   return promise
 }
 
+/** 供 Node 预览等非浏览器环境注入已加载的图片。 */
+export function putImage(src: string, image: CanvasImageSource & { width: number; height: number }): void {
+  imageCache.set(src, image as unknown as HTMLImageElement)
+}
+
 /** 预加载布局树中出现的所有图片，保证导出时图片已就绪。 */
 export async function preloadImages(box: Box): Promise<void> {
   const tasks: Promise<unknown>[] = []
@@ -81,7 +86,9 @@ function drawText(ctx: CanvasRenderingContext2D, box: Box): void {
   const metrics = ctx.measureText(t.value || '中')
   const ascent = metrics.fontBoundingBoxAscent ?? t.sizePx * 0.88
   const descent = metrics.fontBoundingBoxDescent ?? t.sizePx * 0.22
-  const lineHeight = ascent + descent
+  const glyphLine = ascent + descent
+  const lineHeight = glyphLine * (t.lineHeightFactor ?? 1)
+  const topPad = (lineHeight - glyphLine) / 2
   const textWidth = metrics.width * t.scaleX
   const parts = t.gravity.split('|')
   const centerH = parts.includes('center') || parts.includes('center_horizontal')
@@ -94,9 +101,10 @@ function drawText(ctx: CanvasRenderingContext2D, box: Box): void {
   if (t.marquee && textWidth > contentW) {
     originX = contentX - (t.scrollX ?? 0)
   }
-  let baseline = contentY + ascent
-  if (centerV) baseline = contentY + (contentH - lineHeight) / 2 + ascent
-  else if (bottomV) baseline = contentY + contentH - lineHeight + ascent
+  let baseline = contentY + topPad + ascent
+  if (centerV) baseline = contentY + (contentH - lineHeight) / 2 + topPad + ascent
+  else if (bottomV) baseline = contentY + contentH - lineHeight + topPad + ascent
+  baseline += t.baselineOffset ?? 0
   ctx.save()
   ctx.beginPath()
   ctx.rect(contentX, contentY, contentW, contentH)

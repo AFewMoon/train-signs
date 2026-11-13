@@ -28,6 +28,7 @@ export async function drawPlate(
     heightPx: ctxBuild.heightPx,
     dpScale: ctxBuild.widthPx / 340,
     unitScale: ctxBuild.heightPx / spec.designHeight,
+    spaceStyle: options.spaceStyle ?? 0,
     measurer: createMeasurer(),
     patches,
   })

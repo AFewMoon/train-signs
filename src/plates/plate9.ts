@@ -16,9 +16,9 @@ export const plate9: PlateSpec = {
   layout,
   fonts: ['fzxs18', 'fzxs15'],
   fields: [
-    { key: 'carNumber', label: '车厢号', kind: 'text', maxLength: 2, placeholder: '如 8' },
-    { key: 'line1', label: '第一行显示内容', kind: 'text', maxLength: 15, placeholder: '如 D6385' },
-    { key: 'line2', label: '第二行显示内容', kind: 'text', maxLength: 15, placeholder: '如 上海南-义乌' },
+    { key: 'carNumber', label: '车厢号', kind: 'text', maxLength: 2, placeholder: '如 8', required: true },
+    { key: 'line1', label: '第一行显示内容', kind: 'text', maxLength: 15, placeholder: '如 D6385', required: true },
+    { key: 'line2', label: '第二行显示内容', kind: 'text', maxLength: 15, placeholder: '如 上海南-义乌', required: true },
     {
       key: 'color',
       label: '文字颜色',

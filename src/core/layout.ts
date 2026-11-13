@@ -6,6 +6,7 @@ import type {
   Padding,
   TextMetrics,
 } from './types'
+import { estimateLength, fitScaleX } from './text'
 
 function num(value: string | undefined, fallback = 0): number {
   if (!value) return fallback
@@ -96,6 +97,8 @@ function makeBox(node: LayoutNode, ctx: LayoutContext): Box {
       maxLines: patch?.maxLines ?? (attrs['android:maxLines'] ? num(attrs['android:maxLines']) : 1),
       marquee: patch?.marquee ?? node.tag.endsWith('MarqueeTextView'),
       scrollX: patch?.scrollX ?? 0,
+      lineHeightFactor: patch?.lineHeightFactor ?? 1,
+      baselineOffset: patch?.baselineOffset ?? 0,
     }
   }
   return box
@@ -107,6 +110,9 @@ function textMetrics(box: Box, ctx: LayoutContext): TextMetrics {
 }
 
 function intrinsicWidth(box: Box, ctx: LayoutContext): number {
+  const fixedWidth = dpDim(box.attrs['android:layout_width'], ctx.dpScale, 'wrap')
+  // 0dp 表示 layout_weight 语义，不能当作固定宽度。
+  if (typeof fixedWidth === 'number' && fixedWidth > 0) return fixedWidth + box.padding.l + box.padding.r
   if (box.text) {
     const m = textMetrics(box, ctx)
     return m.width + box.padding.l + box.padding.r
@@ -120,6 +126,7 @@ function intrinsicWidth(box: Box, ctx: LayoutContext): number {
     let total = 0
     let max = 0
     for (const child of box.children) {
+      if (!child.visible) continue
       const w = intrinsicWidth(child, ctx) + child.margin.l + child.margin.r
       if (horizontal) total += w
       else max = Math.max(max, w)
@@ -128,21 +135,27 @@ function intrinsicWidth(box: Box, ctx: LayoutContext): number {
   }
   let max = 0
   for (const child of box.children) {
+    if (!child.visible) continue
     max = Math.max(max, intrinsicWidth(child, ctx) + child.margin.l + child.margin.r)
   }
   return max + box.padding.l + box.padding.r
 }
 
 function intrinsicHeight(box: Box, ctx: LayoutContext): number {
+  const fixedHeight = dpDim(box.attrs['android:layout_height'], ctx.dpScale, 'wrap')
+  // 0dp 表示 layout_weight 语义，不能当作固定高度。
+  if (typeof fixedHeight === 'number' && fixedHeight > 0) return fixedHeight + box.padding.t + box.padding.b
   if (box.text) {
     const m = textMetrics(box, ctx)
-    return m.ascent + m.descent + box.padding.t + box.padding.b
+    const lineHeight = (m.ascent + m.descent) * (box.text.lineHeightFactor ?? 1)
+    return lineHeight + box.padding.t + box.padding.b
   }
   if (box.tag === 'LinearLayout') {
     const horizontal = box.attrs['android:orientation'] === 'horizontal'
     let total = 0
     let max = 0
     for (const child of box.children) {
+      if (!child.visible) continue
       const h = intrinsicHeight(child, ctx) + child.margin.t + child.margin.b
       if (horizontal) max = Math.max(max, h)
       else total += h
@@ -151,6 +164,7 @@ function intrinsicHeight(box: Box, ctx: LayoutContext): number {
   }
   let max = 0
   for (const child of box.children) {
+    if (!child.visible) continue
     max = Math.max(max, intrinsicHeight(child, ctx) + child.margin.t + child.margin.b)
   }
   return max + box.padding.t + box.padding.b
@@ -160,8 +174,10 @@ function resolveSize(
   value: number | 'match' | 'wrap',
   intrinsic: number,
   available: number,
-  patchValue: number | undefined,
+  patchValue: number | 'match' | 'wrap' | undefined,
 ): number {
+  if (patchValue === 'wrap') return intrinsic
+  if (patchValue === 'match') return available
   if (patchValue !== undefined) return patchValue
   if (value === 'match') return available
   if (value === 'wrap') return intrinsic
@@ -177,8 +193,13 @@ function childSize(
   const patch = patchFor(ctx, child.id)
   const widthAttr = dpDim(child.attrs['android:layout_width'], ctx.dpScale, 'wrap')
   const heightAttr = dpDim(child.attrs['android:layout_height'], ctx.dpScale, 'wrap')
-  const w = resolveSize(widthAttr, intrinsicWidth(child, ctx), parentInnerW - child.margin.l - child.margin.r, patch?.width)
+  let w = resolveSize(widthAttr, intrinsicWidth(child, ctx), parentInnerW - child.margin.l - child.margin.r, patch?.width)
   const h = resolveSize(heightAttr, intrinsicHeight(child, ctx), parentInnerH - child.margin.t - child.margin.b, patch?.height)
+  const xmlMinWidth = child.attrs['android:minWidth'] ? num(child.attrs['android:minWidth']) * ctx.dpScale : 0
+  const minWidth = patch?.minWidth ?? xmlMinWidth
+  if (widthAttr !== 'match' && patch?.width === undefined) {
+    w = Math.max(w, minWidth)
+  }
   return { w: Math.max(0, w), h: Math.max(0, h) }
 }
 
@@ -267,11 +288,11 @@ function layoutRelative(box: Box, ctx: LayoutContext): void {
       const widthAttr = dpDim(a['android:layout_width'], ctx.dpScale, 'wrap')
       if (widthAttr === 'match') {
         if (x !== undefined && xRight !== undefined) child.w = Math.max(0, xRight - x)
-        else if (x !== undefined) child.w = Math.max(0, right - x)
+        else if (x !== undefined) child.w = Math.max(0, right - m.r - x)
         else if (xRight !== undefined) {
-          child.w = Math.max(0, xRight - left)
+          child.w = Math.max(0, xRight - (left + m.l))
           x = xRight - child.w
-        } else child.w = Math.max(0, innerW)
+        } else child.w = Math.max(0, innerW - m.l - m.r)
       }
       if (x === undefined && xRight !== undefined) x = xRight - child.w
       if (x === undefined) x = left + m.l
@@ -302,11 +323,11 @@ function layoutRelative(box: Box, ctx: LayoutContext): void {
       const heightAttr = dpDim(a['android:layout_height'], ctx.dpScale, 'wrap')
       if (heightAttr === 'match') {
         if (y !== undefined && yBottom !== undefined) child.h = Math.max(0, yBottom - y)
-        else if (y !== undefined) child.h = Math.max(0, bottom - y)
+        else if (y !== undefined) child.h = Math.max(0, bottom - m.b - y)
         else if (yBottom !== undefined) {
-          child.h = Math.max(0, yBottom - top)
+          child.h = Math.max(0, yBottom - (top + m.t))
           y = yBottom - child.h
-        } else child.h = Math.max(0, innerH)
+        } else child.h = Math.max(0, innerH - m.t - m.b)
       }
       if (y === undefined && yBottom !== undefined) y = yBottom - child.h
       if (y === undefined) y = top + m.t
@@ -329,7 +350,7 @@ function layoutLinear(box: Box, ctx: LayoutContext): void {
   let totalWeight = 0
   let usedMain = 0
   for (const child of active) {
-    const weight = num(child.attrs['android:layout_weight'])
+    const weight = patchFor(ctx, child.id)?.weight ?? num(child.attrs['android:layout_weight'])
     totalWeight += weight
     const size = childSize(child, innerW, innerH, ctx)
     child.w = size.w
@@ -341,7 +362,7 @@ function layoutLinear(box: Box, ctx: LayoutContext): void {
   if (totalWeight > 0) {
     const remaining = Math.max(0, innerMain - usedMain)
     for (const child of active) {
-      const weight = num(child.attrs['android:layout_weight'])
+      const weight = patchFor(ctx, child.id)?.weight ?? num(child.attrs['android:layout_weight'])
       if (weight === 0) continue
       const add = (remaining * weight) / totalWeight
       if (horizontal) child.w += add
@@ -367,16 +388,21 @@ function layoutLinear(box: Box, ctx: LayoutContext): void {
   }
 
   for (const child of active) {
+    const childLayoutGravity = child.attrs['android:layout_gravity']
     if (horizontal) {
       child.x = cursor + child.margin.l
-      const { v } = gravityOf(box.attrs['android:gravity'] ?? 'top')
+      const v = childLayoutGravity
+        ? gravityOf(childLayoutGravity).v
+        : gravityOf(box.attrs['android:gravity'] ?? 'top').v
       if (v === 'center') child.y = contentY + (innerH - child.h) / 2 + child.margin.t - child.margin.b
       else if (v === 'bottom') child.y = contentY + innerH - child.h - child.margin.b
       else child.y = contentY + child.margin.t
       cursor += child.w + child.margin.l + child.margin.r
     } else {
       child.y = cursor + child.margin.t
-      const { h } = gravityOf(box.attrs['android:gravity'] ?? 'left')
+      const h = childLayoutGravity
+        ? gravityOf(childLayoutGravity).h
+        : gravityOf(box.attrs['android:gravity'] ?? 'left').h
       if (h === 'center') child.x = contentX + (innerW - child.w) / 2 + child.margin.l - child.margin.r
       else if (h === 'right') child.x = contentX + innerW - child.w - child.margin.r
       else child.x = contentX + child.margin.l
@@ -424,5 +450,29 @@ export function layoutPlate(root: LayoutNode, ctx: LayoutContext): Box {
   void heightAttr
   void patch
   layoutContainer(box, ctx)
+  applyTextFits(box, ctx.patches, ctx.spaceStyle)
   return box
+}
+
+/** 在布局完成后，对声明了 fit / fitLength 的文本节点计算 textScaleX（对应 App 的 h()/f()/L4()）。 */
+export function applyTextFits(box: Box, patches: Map<string, NodePatch>, spaceStyle: 0 | 1 | 2 = 0): void {
+  const patch = box.id ? patches.get(box.id) : undefined
+  if (box.text && patch?.fit) {
+    const available = Math.max(0, box.w - box.padding.l - box.padding.r)
+    box.text.scaleX = fitScaleX(
+      box.text.value,
+      available,
+      box.text.sizePx,
+      patch.fit.maxScale,
+      patch.fit.mode,
+    )
+  } else if (box.text && patch?.fitLength) {
+    const available = Math.max(0, box.w - box.padding.l - box.padding.r)
+    const length = Math.max(2, estimateLength(box.text.value, spaceStyle))
+    box.text.scaleX = Math.min(
+      patch.fitLength.maxScale,
+      available / (box.text.sizePx * length) - 0.02,
+    )
+  }
+  for (const child of box.children) applyTextFits(child, patches, spaceStyle)
 }

@@ -60,11 +60,11 @@ export interface LevelPreset {
 
 /** c.a.a.f.l.c()/d() 中的列车等级与颜色组合（节选常用项）。 */
 export const LEVEL_PRESETS: LevelPreset[] = [
-  { id: 'zhida1', label: '直达特快（藏青）', text: '直达特快', color: COLORS.zhida1 },
-  { id: 'zhida2', label: '直达特快（深蓝）', text: '直达特快', color: COLORS.zhida2 },
-  { id: 'zhida3', label: '直达特快（蓝）', text: '直达特快', color: COLORS.zhida3 },
-  { id: 'zhida4', label: '直达特快（青）', text: '直达特快', color: COLORS.zhida4 },
-  { id: 'zhida5', label: '直达特快（墨绿）', text: '直达特快', color: COLORS.zhida5 },
+  { id: 'zhida1', label: '直达特快（藏青）', text: '直达', color: COLORS.zhida1 },
+  { id: 'zhida2', label: '直达特快（深蓝）', text: '直达', color: COLORS.zhida2 },
+  { id: 'zhida3', label: '直达特快（蓝）', text: '直达', color: COLORS.zhida3 },
+  { id: 'zhida4', label: '直达特快（青）', text: '直达', color: COLORS.zhida4 },
+  { id: 'zhida5', label: '直达特快（墨绿）', text: '直达', color: COLORS.zhida5 },
   { id: 'tekuai1', label: '特快（灰蓝）', text: '特快', color: COLORS.tekuai1 },
   { id: 'tekuai2', label: '特快（蓝）', text: '特快', color: COLORS.tekuai2 },
   { id: 'tekuai3', label: '特快（深绿）', text: '特快', color: COLORS.tekuai3 },

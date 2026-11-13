@@ -16,9 +16,9 @@ export const plate8: PlateSpec = {
   layout,
   fonts: ['toshiba', 'mnydz', 'fzxs15'],
   fields: [
-    { key: 'carNumber', label: '车厢号', kind: 'text', maxLength: 2, placeholder: '如 8' },
-    { key: 'trainNumber', label: '车次', kind: 'text', maxLength: 15, placeholder: '如 D6385' },
-    { key: 'station', label: '站名显示内容', kind: 'text', maxLength: 120, placeholder: '如 上海南-义乌' },
+    { key: 'carNumber', label: '车厢号', kind: 'text', maxLength: 2, placeholder: '如 8', required: true },
+    { key: 'trainNumber', label: '车次', kind: 'text', maxLength: 15, placeholder: '如 D6385', required: true },
+    { key: 'station', label: '站名显示内容', kind: 'text', maxLength: 120, placeholder: '如 上海南-义乌', required: true },
     {
       key: 'color',
       label: '车厢号/站名文字颜色',

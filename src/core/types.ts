@@ -57,6 +57,10 @@ export interface Box {
     maxLines: number
     marquee?: boolean
     scrollX?: number
+    /** 行盒高度倍率（模拟 Android includeFontPadding 的行高），默认 1。 */
+    lineHeightFactor?: number
+    /** 基线额外偏移（px），用于校准字体垂直度量差异。 */
+    baselineOffset?: number
   }
   image?: { src: string; scaleType: string }
   bg?: string
@@ -71,9 +75,9 @@ export interface NodePatch {
   bold?: boolean
   scaleX?: number
   sizePx?: number
-  /** 代码中 k() 计算出的尺寸/边距（px）。 */
-  width?: number
-  height?: number
+  /** 代码中 k() 计算出的尺寸/边距（px）；也可用 'wrap'/'match' 覆盖 XML 规则。 */
+  width?: number | 'wrap' | 'match'
+  height?: number | 'wrap' | 'match'
   margin?: Partial<Padding>
   padding?: Partial<Padding>
   bg?: string
@@ -84,6 +88,21 @@ export interface NodePatch {
   maxLines?: number
   marquee?: boolean
   scrollX?: number
+  /** 对应 App 的 h()/f()：布局完成后按实际内容宽度计算 textScaleX。 */
+  fit?: { maxScale: number; mode: number }
+  /**
+   * 对应部分模板的中文站名压缩：len = max(2, estimateLength(text))；
+   * scaleX = min(maxScale, 可用宽度 / (字号 × len) − 0.02)。
+   */
+  fitLength?: { maxScale: number }
+  /** 对应 android:minWidth（px）。 */
+  minWidth?: number
+  /** 覆盖 android:layout_weight（动态分配宽度用）。 */
+  weight?: number
+  /** 行盒高度倍率，用于校准 Android TextView 的 includeFontPadding 行高。 */
+  lineHeightFactor?: number
+  /** 基线额外偏移（px）。 */
+  baselineOffset?: number
 }
 
 export type PatchMap = Map<string, NodePatch>
@@ -93,6 +112,7 @@ export interface LayoutContext {
   heightPx: number
   dpScale: number
   unitScale: number
+  spaceStyle: 0 | 1 | 2
   measurer: Measurer
   patches: PatchMap
 }
