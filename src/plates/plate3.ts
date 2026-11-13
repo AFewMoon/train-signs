@@ -298,6 +298,7 @@ export const plate3: PlateSpec = {
       font: 'arial',
       sizePx: k(6),
       bold: true,
+      lineHeightFactor: NUMBER_LINE_HEIGHT_FACTOR,
       fit: { maxScale: 1.05, mode: 1 },
     })
     patches.set('tv_number_2', {
@@ -307,6 +308,7 @@ export const plate3: PlateSpec = {
       sizePx: k(6),
       bold: true,
       margin: { t: k(-3.5) },
+      lineHeightFactor: NUMBER_LINE_HEIGHT_FACTOR,
       fit: { maxScale: 1.05, mode: 1 },
     })
     patches.set('tv_number_3', {
@@ -316,6 +318,7 @@ export const plate3: PlateSpec = {
       sizePx: k(6),
       bold: true,
       margin: { t: k(-3.5) },
+      lineHeightFactor: NUMBER_LINE_HEIGHT_FACTOR,
       fit: { maxScale: 1.05, mode: 1 },
     })
 

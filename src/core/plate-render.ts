@@ -1,4 +1,4 @@
-import { createMeasurer } from '../core/fonts'
+import { createMeasurer, ensureFonts } from '../core/fonts'
 import { layoutPlate } from '../core/layout'
 import { preloadImages } from '../core/render'
 import { renderBox } from '../core/render'
@@ -21,6 +21,9 @@ export async function drawPlate(
   canvas: HTMLCanvasElement,
   options: DrawOptions = {},
 ): Promise<PlateRenderResult> {
+  // 字体必须先加载并进入 document.fonts，否则 Canvas 会退回系统字体，测量与绘制都会失真。
+  await ensureFonts(spec.fonts)
+  if (typeof document !== 'undefined' && document.fonts) await document.fonts.ready
   const ctxBuild = createBuildContext(spec.ratio, spec.designHeight, options.spaceStyle ?? 0)
   const patches = spec.build(values, ctxBuild)
   const box = layoutPlate(spec.layout, {

@@ -123,6 +123,18 @@ describe('套跑4（Plate4）', () => {
     expect(byId(box, 'll_plate_ex').visible).toBe(false)
   })
 
+  it('等级预设决定颜色，自定义文字只覆盖文字', () => {
+    const ctx = createBuildContext(plate4.ratio, plate4.designHeight, 0)
+    const patches = plate4.build(
+      { ...plate4.defaults, level: 'kuaisu1', levelTextLeft: '直达特快' },
+      ctx,
+    )
+    expect(patches.get('tv_start_en')?.bg).toBe(COLORS.kuaisu1)
+    expect(patches.get('tv_level_11')?.text).toBe('直达')
+    expect(patches.get('tv_level_12')?.text).toBe('特快')
+    expect(patches.get('iv_icon_1')?.image).toBe(plate4.defaults.icon)
+  })
+
   it('拼音栏贴边时主行 padding 归零', () => {
     const aligned = render(plate4, { alignSides: true })
     const main = byId(aligned, 'll_plate_main')
@@ -194,6 +206,17 @@ describe('套跑6（Plate6）', () => {
     expect(byId(box, 'tv_number_31').text?.lineHeightFactor).toBe(1.3)
     expect(byId(box, 'tv_number_32').visible).toBe(true)
     expect(byId(box, 'tv_number_33').visible).toBe(false)
+  })
+
+  it('路徽与等级文字可切换', () => {
+    const ctx = createBuildContext(plate6.ratio, plate6.designHeight, 0)
+    const patches = plate6.build(
+      { ...plate6.defaults, icon: 'icons/railway/ic_plate_07.png', levelTextRight: '临客' },
+      ctx,
+    )
+    expect(patches.get('iv_icon_2')?.image).toBe('icons/railway/ic_plate_07.png')
+    expect(patches.get('tv_level_31')?.text).toBe('临')
+    expect(patches.get('tv_level_32')?.text).toBe('客')
   })
 
   it('取消贴边时根容器左右 padding 为 k(3)', () => {

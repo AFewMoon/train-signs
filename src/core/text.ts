@@ -19,7 +19,7 @@ export const SPACE_WIDTH: Record<SpaceStyle, number> = {
 export const LEVEL_WIDTH_EPSILON: Record<number, number> = { 0: 0.003, 1: 0.001 }
 
 const ASCII_NAMES: Record<string, number> = {
-  ' ': 0,
+  ' ': 0.5294118,
   '-': 0.6666667,
   '/': 0.5555556,
   '→': 2,
@@ -124,7 +124,7 @@ export function fitScaleX(
   const sum = widthFactorSum(text, mode)
   if (sum <= 0 || textSizePx <= 0) return maxScale
   const raw =
-    (maxScale * availableWidth * widthFactorBase(mode)) / (sum * textSizePx) -
+    (availableWidth * widthFactorBase(mode)) / (sum * textSizePx) -
     (text.length - 1) * (LEVEL_WIDTH_EPSILON[mode] ?? 0.001)
   return Math.min(raw, maxScale)
 }

@@ -312,10 +312,10 @@ export const plate5: PlateSpec = {
       levelText = str(values, 'customLevelLeft').trim()
       levelColor = str(values, 'customLevelColor') || COLORS.kuaisu1
     } else {
-      const level = LEFT_LEVEL_MAP.get(levelId) ?? LEFT_LEVEL_MAP.get('kuaisu1')
-      if (level) {
-        levelText = level.text
-        levelColor = level.color
+      const preset = LEFT_LEVEL_MAP.get(levelId) ?? LEFT_LEVEL_MAP.get('kuaisu1')
+      if (preset) {
+        levelText = preset.text
+        levelColor = preset.color
       }
     }
     const level = splitLevel(levelText)

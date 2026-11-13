@@ -262,7 +262,8 @@ async function download(): Promise<void> {
     }
   }
   const car = strValue('carNumber')
-  const name = `水牌_${current.value.name}${car ? `_${car}` : ''}`
+  const safeName = current.value.name.replace(/[\\/:*?"<>|]/g, '_')
+  const name = `水牌_${safeName}${car ? `_${car}` : ''}`
   exportCanvas(canvas, settings.format, name)
   await saveToGallery().catch(() => undefined)
   showToast('图片已生成，可下载或在图库中查看')
