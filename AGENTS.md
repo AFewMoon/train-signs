@@ -132,7 +132,8 @@ npm run sync
 
 - 需要 token 具 `contents: write`；会触发 GitHub Actions 的 `push` 工作流（本仓库验证有效）。
 - 只适合文本/小文件；>20MB 文件会拒绝（字体未变化时不会上传）。
-- 副作用：远端提交由 API 创建，**SHA 与本地 git 历史不同**。网络恢复后可用 `git fetch origin && git reset --hard origin/main` 对齐（会丢弃本地未同步提交，先确认），或继续用 `npm run sync`。
+- **必须按 git 索引 blob 上传**（脚本用 `git cat-file blob :path`），不要直接读工作区文件：本机 `core.autocrlf=true` 时工作区是 CRLF，直接上传会把远端整文件改成 CRLF（本项目曾因此让 `App.vue` 产生 487 行假 diff）。
+- 副作用：远端提交由 API 创建，**SHA 与本地 git 历史不同**。网络恢复后可用 `git fetch origin && git reset --hard origin/main` 对齐（会丢弃本地未同步提交，先确认），或继续用 `npm run sync`；可用 `git rev-parse HEAD^{tree}` 与远端 commit 的 tree SHA 对比，确认内容一致。
 
 ## 6. 构建、测试与部署
 
@@ -215,7 +216,8 @@ npm.cmd run sync           # 需 GITHUB_TOKEN，API 回退推送
 - `runPreview()`：字体未就绪先等 120ms，超时用系统字体画一版占位；字体与图片就绪后重排重绘。已经显示占位时，后续输入直接重绘占位，不再重复等待宽限。
 - 每次 await 后检查 `renderSeq` token；切换/输入立即递增 token，旧渲染不得落笔。`values` 必须先快照再 await。
 - 输入用 90ms 防抖；`format` / `exportWidth` 只改元信息，不要触发画布重绘；`spaceStyle` 才需要重绘。
-- 悬停/聚焦预取该模板字体（120ms 延迟、离开/失焦取消、`saveData` 跳过）；触屏 `pointerdown` 立即预取。不要一次性预取全部模板（总计约 15MB）。
+- **不要在 `index.html` 里 preload 字体**：字体会和入口 JS 抢带宽；在 App setup 里立即 `ensureFonts(默认模板)` 即可，`onMounted` 只负责第一次预览。
+- 悬停/聚焦预取该模板字体（120ms 延迟、离开/失焦取消、`saveData`/2G/3G 跳过）；触屏 `pointerdown` 立即预取。**当前模板字体未 settle 时不要预取**，避免抢首屏带宽；不要一次性预取全部模板（总计约 15MB）。
 
 ### 测量缓存
 
