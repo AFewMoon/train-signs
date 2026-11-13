@@ -21,15 +21,20 @@ export interface PlateLayoutResult extends PlateRenderResult {
   box: Box
 }
 
-/** 加载字体并按导出尺寸完成布局；Canvas 与 SVG 导出共用。 */
-export async function layoutPlateForExport(
+/** 已完成的布局，附带仍在进行的图片加载任务。 */
+export interface PreparedPlate extends PlateLayoutResult {
+  images: Promise<void>
+}
+
+/**
+ * 同步完成布局，并启动图片预加载；不等待字体。
+ * 预览会先用当前可用字体画一版占位，字体就绪后再调用一次并重绘。
+ */
+export function preparePlate(
   spec: PlateSpec,
   values: Record<string, string | boolean>,
   options: DrawOptions = {},
-): Promise<PlateLayoutResult> {
-  // 字体必须先加载并进入 document.fonts，否则 Canvas 会退回系统字体，测量与绘制都会失真。
-  await ensureFonts(spec.fonts)
-  if (typeof document !== 'undefined' && document.fonts) await document.fonts.ready
+): PreparedPlate {
   const size = exportSize(spec.ratio, options.widthPx)
   const ctxBuild = createBuildContext(spec.ratio, spec.designHeight, options.spaceStyle ?? 0, size.width)
   const patches = spec.build(values, ctxBuild)
@@ -42,12 +47,39 @@ export async function layoutPlateForExport(
     measurer: createMeasurer(),
     patches,
   })
-  await preloadImages(box)
   return {
     box,
     width: Math.round(ctxBuild.widthPx),
     height: Math.round(ctxBuild.heightPx),
+    images: preloadImages(box),
   }
+}
+
+/** 把布局树画到 canvas；尺寸未变时只清屏，避免反复重建画布缓冲。 */
+export function paintPlate(canvas: HTMLCanvasElement, prepared: PreparedPlate): void {
+  const { box, width, height } = prepared
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width
+    canvas.height = height
+  }
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2D 不可用')
+  ctx.setTransform(1, 0, 0, 1, 0, 0)
+  ctx.clearRect(0, 0, width, height)
+  renderBox(ctx, box)
+}
+
+/** 加载字体并按导出尺寸完成布局；Canvas 与 SVG 导出共用。 */
+export async function layoutPlateForExport(
+  spec: PlateSpec,
+  values: Record<string, string | boolean>,
+  options: DrawOptions = {},
+): Promise<PreparedPlate> {
+  // 字体必须先加载并进入 document.fonts，否则 Canvas 会退回系统字体，测量与绘制都会失真。
+  await ensureFonts(spec.fonts)
+  const prepared = preparePlate(spec, values, options)
+  await prepared.images
+  return prepared
 }
 
 /** 将水牌渲染到给定 canvas（原生像素尺寸，可直接导出）。 */
@@ -57,14 +89,9 @@ export async function drawPlate(
   canvas: HTMLCanvasElement,
   options: DrawOptions = {},
 ): Promise<PlateRenderResult> {
-  const { box, width, height } = await layoutPlateForExport(spec, values, options)
-  canvas.width = width
-  canvas.height = height
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Canvas 2D 不可用')
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  renderBox(ctx, box)
-  return { width, height }
+  const prepared = await layoutPlateForExport(spec, values, options)
+  paintPlate(canvas, prepared)
+  return { width: prepared.width, height: prepared.height }
 }
 
 /** 生成指定分辨率的离屏 canvas，供下载与图库使用（不影响预览画布）。 */

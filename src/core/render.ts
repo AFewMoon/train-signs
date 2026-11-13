@@ -9,6 +9,12 @@ export function assetUrl(path: string): string {
   return `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
 }
 
+/** 封面原图 → 导航用 WebP 缩略图；非封面路径原样返回。 */
+export function coverThumb(cover: string): string {
+  const match = /^(.*covers\/)([^/]+)\.png$/.exec(cover)
+  return match ? `${match[1]}thumbs/${match[2]}.webp` : cover
+}
+
 export function loadImage(src: string): Promise<HTMLImageElement | null> {
   const cached = imageCache.get(src)
   if (cached) return Promise.resolve(cached)
@@ -16,9 +22,18 @@ export function loadImage(src: string): Promise<HTMLImageElement | null> {
   if (loading) return loading
   const promise = new Promise<HTMLImageElement | null>((resolve) => {
     const img = new Image()
+    img.decoding = 'async'
     img.onload = () => {
-      imageCache.set(src, img)
-      resolve(img)
+      const done = (): void => {
+        imageCache.set(src, img)
+        resolve(img)
+      }
+      // 先解码再绘制，避免首帧 fillText/drawImage 时同步解码大图造成卡顿。
+      if (typeof img.decode === 'function') {
+        img.decode().then(done, () => resolve(null))
+      } else {
+        done()
+      }
     }
     img.onerror = () => resolve(null)
     img.src = assetUrl(src)

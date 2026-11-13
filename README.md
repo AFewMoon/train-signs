@@ -18,6 +18,7 @@
 - **列车等级与颜色**：19–22 种预设等级色（直达/特快/快速/普快/普客/临客/路用/旅游/通勤），支持自定义等级文字。
 - **14 种路徽**：来自原 App `mipmap-nodpi`。
 - **导出与图库**：PNG / JPEG / **SVG 真矢量**导出；自定义导出宽度（1370/1920/2560/4096 或任意 320–8192px，宽高比锁定）；IndexedDB 本地图库；空格样式与图片格式设置持久化。
+- **渐进加载与缓存**：字体按需加载并写入 Cache API，切换模板先显示占位、字体就绪后自动替换；导航使用 WebP 缩略图，二次访问字体不再重复下载。
 - **纯静态、无后端**：桌面与手机自适应，支持 `?` 无路由直开（单页）。
 
 ## 导出
@@ -33,6 +34,7 @@
 - 套跑页的“交换/重排”在原 App 是带状态的 View 搬移，Web 用复选框语义近似；部分镜像顺序与 App 略有不同。
 - Plate4 附加车次区在原 App 会增高画布，Web 固定 5.15 比例，开启后附加文字可能裁底。
 - 电子水牌长文本为 Marquee 滚动，导出取当前帧（与原 App 一致）。
+- 首次使用某个模板需要下载其字体（约 0.5–10MB，取决于模板）；字体就绪前预览使用系统字体占位，完成后自动替换。字体写入 Cache API，二次访问不再重复下载。
 - SVG 的文字已转路径，不能再作为文本编辑；极少数生僻字会以位图文字回退。
 - 仅做静态逆向分析，未在真机运行原 App；字体度量差异已用 `lineHeightFactor`/`baselineOffset` 按封面校准，详见 [docs/re/plate-matrix.md](docs/re/plate-matrix.md)。
 
@@ -48,8 +50,9 @@
 npm install
 npm run dev        # 本地开发
 npm run build      # 类型检查 + 构建
-npm run test       # 单元测试（99 例）
+npm run test       # 单元测试（109 例）
 npm run render -- plate8 plate9   # Node + Skia 渲染预览图到 analysis/（Windows 本地校验用）
+npm run covers     # 重新生成 public/covers/thumbs 下的 WebP 缩略图
 ```
 
 > 本机 npm 缓存需指向工作区（沙箱限制）：
@@ -73,7 +76,7 @@ npm run sync
 ```
 public/fonts     原 App 字体（见 NOTICE）
 public/icons     路徽图标（14 种）
-public/covers    原 App 水牌配图
+public/covers    原 App 水牌配图（thumbs/ 为导航用 WebP 缩略图）
 public/data      拼音数据（characters.dat / words.dat）
 src/core         布局引擎、文本压缩、字体、拼音、渲染、设置/图库
 src/plates       10 个水牌模板 + 从 XML 提取的布局 JSON

@@ -195,5 +195,39 @@ npm.cmd run build
 npm.cmd test
 npm.cmd run render -- plate0 plate5 plate8
 npm.cmd run layouts        # 重新提取 src/plates/layouts/*.json
+npm.cmd run covers         # 重新生成 public/covers/thumbs 下的 WebP 缩略图
 npm.cmd run sync           # 需 GITHUB_TOKEN，API 回退推送
 ```
+
+## 10. 加载与切换性能
+
+### 字体体积与缓存
+
+- GitHub Pages 会对字体做 gzip，但体积仍大：hycsj 3.24MB、hyzhj 2.98MB、fzxbs 6.57MB、mnydz 0.83MB（原始 14.6MB）。Plate0–6 首次进入约 6.7MB，Plate7 约 10MB；且 `cache-control: max-age=600`，10 分钟后会重新下载。
+- `src/core/fonts.ts` 用 Cache API 缓存字体 ArrayBuffer（`train-signs-fonts-v1`），再用 `new FontFace(family, buffer)` 加载；**改动任何字体文件都必须递增缓存版本号**，否则用户会继续用旧字形。
+- `mnydz.otf` 原始 14.6MB、gzip 后仅 0.83MB，缓存反而增加磁盘读取与峰值内存，因此列入 `FONT_CACHE_SKIP`；不要“顺手”给它加缓存。
+- 缓存字体解析失败时删除对应条目并回退 URL；Cache API 不可用/配额满/隐私模式全部静默回退，不能影响功能。
+
+### 渐进预览（重要）
+
+- **预览热路径禁止 `await document.fonts.ready`**：它会等待所有正在加载的字体（包括悬停预取），把切换拖成“卡死”。只 await `ensureFonts(spec.fonts)`，用 `isFontsReady()` 判断是否已 settle。
+- `preparePlate()` 同步布局并启动图片加载；`paintPlate()` 在画布尺寸不变时只清屏，不重设 `width/height`（重设会清空并重建缓冲）。
+- `runPreview()`：字体未就绪先等 120ms，超时用系统字体画一版占位；字体与图片就绪后重排重绘。已经显示占位时，后续输入直接重绘占位，不再重复等待宽限。
+- 每次 await 后检查 `renderSeq` token；切换/输入立即递增 token，旧渲染不得落笔。`values` 必须先快照再 await。
+- 输入用 90ms 防抖；`format` / `exportWidth` 只改元信息，不要触发画布重绘；`spaceStyle` 才需要重绘。
+- 悬停/聚焦预取该模板字体（120ms 延迟、离开/失焦取消、`saveData` 跳过）；触屏 `pointerdown` 立即预取。不要一次性预取全部模板（总计约 15MB）。
+
+### 测量缓存
+
+- `createMeasurer()` 的 `measureText` 结果按 `${version}|font|bold|size|text}` 缓存；字体 settle 时 `version++` 并清空，否则会把系统字体宽度缓存到设计字体上。
+- 一次 `measure()` 只调用一次 `measureText`（ascent/descent 与 width 共用结果）。
+
+### 封面缩略图
+
+- 导航必须用 `public/covers/thumbs/*.webp`（264×104，约 5–8KB/张），不要直接加载 1.49MB 的原 PNG；`npm run covers` 用 `@napi-rs/canvas` 重新生成。
+- `coverThumb()` 只做路径映射；原封面仍用于文档/预览。
+
+### 验证
+
+- `npm run render -- plate0 … plate9` 的 PNG SHA 必须与优化前一致（性能优化不改布局与绘制结果）。
+- 二次访问时 DevTools Network 应无字体请求；冷启动画布应在字体下载完成前出现占位，随后替换为设计字体。

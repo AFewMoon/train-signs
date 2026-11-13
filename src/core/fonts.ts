@@ -18,25 +18,121 @@ export const FONTS: Record<Exclude<FontKey, 'sans'>, FontDef> = {
   toshiba: { file: 'toshiba-bfa.ttf', family: 'Plate Toshiba' },
 }
 
+/** 字体文件变化时必须递增，否则 Cache API 会继续返回旧字体。 */
+const FONT_CACHE_NAME = 'train-signs-fonts-v1'
+const FONT_CACHE_PREFIX = 'train-signs-fonts-'
+/**
+ * mnydz.otf 原始 14.6MB、gzip 后仅 0.83MB：缓存它反而增加磁盘读取与内存峰值。
+ * 其余字体压缩后仍有 0.4–6.6MB，跨会话缓存收益明显。
+ */
+const FONT_CACHE_SKIP = new Set(['mnydz.otf'])
+
 const loaded = new Map<FontKey, Promise<void>>()
+const settled = new Set<FontKey>()
 
 function assetUrl(path: string): string {
   return `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
 }
 
-/** 懒加载字体；同一字体只加载一次。 */
+let cachePruned = false
+
+/** 删除旧版本字体缓存，避免升级后磁盘里堆积多份大字体。 */
+async function pruneOldFontCaches(): Promise<void> {
+  if (cachePruned) return
+  cachePruned = true
+  try {
+    for (const name of await caches.keys()) {
+      if (name.startsWith(FONT_CACHE_PREFIX) && name !== FONT_CACHE_NAME) {
+        await caches.delete(name)
+      }
+    }
+  } catch {
+    // 缓存列表不可用时忽略。
+  }
+}
+
+/**
+ * 从 Cache API 读取字体字节；未命中时下载并异步写回。
+ * 失败返回 null，由调用方回退到 `FontFace(url)`，不影响功能。
+ */
+export async function readFontFromCache(url: string): Promise<ArrayBuffer | null> {
+  if (typeof caches === 'undefined') return null
+  try {
+    const cache = await caches.open(FONT_CACHE_NAME)
+    await pruneOldFontCaches()
+    const hit = await cache.match(url)
+    if (hit) return await hit.arrayBuffer()
+    const response = await fetch(url, { cache: 'force-cache' })
+    if (!response.ok) return null
+    // clone 之后再读取，保证写缓存与解析互不阻塞。
+    const copy = response.clone()
+    const buffer = await response.arrayBuffer()
+    void cache.put(url, copy).catch(() => undefined)
+    return buffer
+  } catch (error) {
+    console.debug('字体缓存读写失败，回退到网络加载', url, error)
+    return null
+  }
+}
+
+async function deleteFontCache(url: string): Promise<void> {
+  if (typeof caches === 'undefined') return
+  try {
+    const cache = await caches.open(FONT_CACHE_NAME)
+    await cache.delete(url)
+  } catch {
+    // 忽略：下次会走网络重新加载。
+  }
+}
+
+let measureContext: CanvasRenderingContext2D | null = null
+let fontVersion = 0
+const metricsCache = new Map<string, TextMetrics>()
+const METRICS_CACHE_LIMIT = 2048
+
+/** 字体（或失败）settle 后清理测量缓存，避免把系统字体宽度当成设计字体宽度。 */
+function markFontSettled(key: FontKey): void {
+  settled.add(key)
+  fontVersion += 1
+  metricsCache.clear()
+}
+
+/** 加载单个字体；同一字体只创建一次 FontFace。 */
 export function ensureFont(key: FontKey): Promise<void> {
   if (key === 'sans') return Promise.resolve()
   const cached = loaded.get(key)
   if (cached) return cached
   const def = FONTS[key]
   const promise = (async () => {
-    if (typeof document === 'undefined' || !('fonts' in document)) return
-    const face = new FontFace(def.family, `url(${assetUrl(`fonts/${def.file}`)})`)
+    if (typeof document === 'undefined' || !('fonts' in document)) {
+      markFontSettled(key)
+      return
+    }
+    const url = assetUrl(`fonts/${def.file}`)
+    const useCache = import.meta.env.PROD && !FONT_CACHE_SKIP.has(def.file)
+    const buffer = useCache ? await readFontFromCache(url) : null
+
+    if (buffer) {
+      try {
+        const face = new FontFace(def.family, buffer)
+        await face.load()
+        document.fonts.add(face)
+        markFontSettled(key)
+        return
+      } catch (error) {
+        // 缓存损坏时删掉条目，走网络重试一次。
+        console.warn(`缓存字体解析失败，重新下载：${def.file}`, error)
+        await deleteFontCache(url)
+      }
+    }
+
+    const face = new FontFace(def.family, `url(${url})`)
     await face.load()
     document.fonts.add(face)
+    markFontSettled(key)
   })().catch((error) => {
     console.warn(`字体加载失败：${def.file}`, error)
+    markFontSettled(key)
   })
   loaded.set(key, promise)
   return promise
@@ -46,12 +142,15 @@ export async function ensureFonts(keys: FontKey[]): Promise<void> {
   await Promise.all(keys.map((key) => ensureFont(key)))
 }
 
+/** 指定字体是否都已 settle（加载成功或失败）；失败也算就绪，避免反复等待。 */
+export function isFontsReady(keys: FontKey[]): boolean {
+  return keys.every((key) => key === 'sans' || settled.has(key))
+}
+
 export function fontFamily(key: FontKey): string {
   if (key === 'sans') return "'Noto Sans SC', 'Microsoft YaHei', sans-serif"
   return `'${FONTS[key].family}', 'Noto Sans SC', 'Microsoft YaHei', sans-serif`
 }
-
-let measureContext: CanvasRenderingContext2D | null = null
 
 function context(): CanvasRenderingContext2D {
   if (measureContext) return measureContext
@@ -67,16 +166,20 @@ function context(): CanvasRenderingContext2D {
 export function createMeasurer(): Measurer {
   return {
     measure(text: string, font: FontKey, sizePx: number, scaleX: number, bold = false): TextMetrics {
+      const key = `${fontVersion}|${font}|${bold ? 1 : 0}|${sizePx}|${text}`
+      const hit = metricsCache.get(key)
+      if (hit) {
+        return { width: hit.width * scaleX, ascent: hit.ascent, descent: hit.descent }
+      }
       const ctx = context()
       ctx.font = `${bold ? '700 ' : ''}${sizePx}px ${fontFamily(font)}`
       const m = ctx.measureText(text || '中')
       const ascent = m.fontBoundingBoxAscent ?? sizePx * 0.88
       const descent = m.fontBoundingBoxDescent ?? sizePx * 0.22
-      return {
-        width: (text ? ctx.measureText(text).width : 0) * scaleX,
-        ascent,
-        descent,
-      }
+      const rawWidth = text ? m.width : 0
+      if (metricsCache.size >= METRICS_CACHE_LIMIT) metricsCache.clear()
+      metricsCache.set(key, { width: rawWidth, ascent, descent })
+      return { width: rawWidth * scaleX, ascent, descent }
     },
   }
 }
