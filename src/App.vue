@@ -330,7 +330,8 @@ function prefetchAllowed(): boolean {
 
 /** 悬停/聚焦预取模板字体，把“点击后才开始下载”提前。 */
 function warmPlate(plate: PlateSpec, immediate = false): void {
-  if (plate.id === current.value.id || !prefetchAllowed()) return
+  // 当前模板字体还在加载时不预取，避免抢走首屏带宽。
+  if (plate.id === current.value.id || !prefetchAllowed() || !isFontsReady(current.value.fonts)) return
   const timer = warmTimers.get(plate.id)
   if (timer !== undefined) {
     window.clearTimeout(timer)
