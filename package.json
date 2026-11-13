@@ -1,0 +1,30 @@
+{
+  "name": "train-signs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "列车水牌制作 Web 版：基于 Vue 3 + Canvas 的静态水牌生成器",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "render": "scripts\\preview.cmd",
+    "layouts": "node scripts/extract-layouts.mjs"
+  },
+  "dependencies": {
+    "idb-keyval": "^6.3.0",
+    "vue": "^3.5.45"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.1.1",
+    "@vitejs/plugin-vue": "^6.0.11",
+    "fast-xml-parser": "^5.12.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0",
+    "vue-tsc": "^3.3.14"
+  }
+}

@@ -1,0 +1,7 @@
+*.ttf binary
+*.otf binary
+*.png binary
+*.jpg binary
+*.apk binary
+*.dat binary
+package-lock.json text eol=lf

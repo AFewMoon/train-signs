@@ -1,0 +1,565 @@
+{
+  "tag": "LinearLayout",
+  "attrs": {
+    "android:orientation": "horizontal",
+    "android:id": "ll_plate",
+    "android:background": "#ffffff",
+    "android:layout_width": "match_parent",
+    "android:layout_height": "70dp"
+  },
+  "children": [
+    {
+      "tag": "RelativeLayout",
+      "attrs": {
+        "android:id": "rl_left",
+        "android:layout_width": "0dp",
+        "android:layout_height": "match_parent",
+        "android:layout_marginRight": "1.48dp",
+        "android:layout_weight": "1"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "28.3dp",
+            "android:textColor": "#000000",
+            "android:gravity": "center",
+            "android:id": "tv_start",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginTop": "10.38dp",
+            "android:textScaleX": "0.9",
+            "android:maxLines": "1",
+            "android:layout_alignLeft": "@+id/tv_start_en",
+            "android:layout_alignRight": "@+id/tv_start_en"
+          },
+          "children": []
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "11.08dp",
+            "android:textColor": "#ffffff",
+            "android:gravity": "center",
+            "android:id": "tv_start_en",
+            "android:background": "#ff3145",
+            "android:paddingLeft": "1dp",
+            "android:paddingRight": "1dp",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "18.68dp",
+            "android:layout_marginBottom": "5dp",
+            "android:maxLines": "1",
+            "android:layout_alignParentBottom": "true"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "tag": "RelativeLayout",
+      "attrs": {
+        "android:id": "rl_icon_1",
+        "android:layout_width": "70dp",
+        "android:layout_height": "match_parent",
+        "android:layout_marginLeft": "-20dp",
+        "android:layout_marginRight": "-20dp"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "8.31dp",
+            "android:textColor": "#000000",
+            "android:id": "tv_level_11",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginTop": "2.08dp",
+            "android:layout_marginRight": "-2.37dp",
+            "android:textScaleX": "1.15",
+            "android:layout_toLeftOf": "@+id/iv_icon_1"
+          },
+          "children": []
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "8.31dp",
+            "android:textColor": "#000000",
+            "android:id": "tv_level_12",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginLeft": "-2.37dp",
+            "android:layout_marginTop": "2.08dp",
+            "android:textScaleX": "1.15",
+            "android:layout_toRightOf": "@+id/iv_icon_1"
+          },
+          "children": []
+        },
+        {
+          "tag": "ImageView",
+          "attrs": {
+            "android:id": "iv_icon_1",
+            "android:layout_width": "31.44dp",
+            "android:layout_height": "31.44dp",
+            "android:layout_marginTop": "9.72dp",
+            "android:src": "icons/railway/ic_plate_01.png",
+            "android:scaleType": "centerCrop",
+            "android:layout_centerHorizontal": "true"
+          },
+          "children": []
+        },
+        {
+          "tag": "LinearLayout",
+          "attrs": {
+            "android:gravity": "center",
+            "android:orientation": "vertical",
+            "android:id": "ll_number_1",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "28.68dp",
+            "android:layout_marginLeft": "-1dp",
+            "android:layout_marginRight": "-1dp",
+            "android:layout_alignLeft": "@+id/iv_icon_1",
+            "android:layout_alignRight": "@+id/iv_icon_1",
+            "android:layout_alignParentBottom": "true"
+          },
+          "children": [
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_11",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            },
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_12",
+                "android:visibility": "gone",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:layout_marginTop": "-3.5dp",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            },
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_13",
+                "android:visibility": "gone",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:layout_marginTop": "-3.5dp",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "RelativeLayout",
+      "attrs": {
+        "android:id": "rl_middle_left",
+        "android:layout_width": "0dp",
+        "android:layout_height": "match_parent",
+        "android:layout_marginLeft": "1.48dp",
+        "android:layout_marginRight": "1.48dp",
+        "android:layout_weight": "1"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "28.3dp",
+            "android:textColor": "#000000",
+            "android:gravity": "center",
+            "android:id": "tv_middle_left",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginTop": "10.38dp",
+            "android:textScaleX": "0.9",
+            "android:maxLines": "1",
+            "android:layout_alignLeft": "@+id/tv_middle_left_en",
+            "android:layout_alignRight": "@+id/tv_middle_left_en"
+          },
+          "children": []
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "11.08dp",
+            "android:textColor": "#ffffff",
+            "android:gravity": "center",
+            "android:id": "tv_middle_left_en",
+            "android:background": "#ff3145",
+            "android:paddingLeft": "1dp",
+            "android:paddingRight": "1dp",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "18.68dp",
+            "android:layout_marginBottom": "5dp",
+            "android:maxLines": "1",
+            "android:layout_alignParentBottom": "true"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "tag": "RelativeLayout",
+      "attrs": {
+        "android:id": "rl_icon_2",
+        "android:layout_width": "70dp",
+        "android:layout_height": "match_parent",
+        "android:layout_marginLeft": "-20dp",
+        "android:layout_marginRight": "-20dp"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "8.31dp",
+            "android:textColor": "#000000",
+            "android:id": "tv_level_21",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginTop": "2.08dp",
+            "android:layout_marginRight": "-2.37dp",
+            "android:textScaleX": "1.15",
+            "android:layout_toLeftOf": "@+id/iv_icon_2"
+          },
+          "children": []
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "8.31dp",
+            "android:textColor": "#000000",
+            "android:id": "tv_level_22",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginLeft": "-2.37dp",
+            "android:layout_marginTop": "2.08dp",
+            "android:textScaleX": "1.15",
+            "android:layout_toRightOf": "@+id/iv_icon_2"
+          },
+          "children": []
+        },
+        {
+          "tag": "ImageView",
+          "attrs": {
+            "android:id": "iv_icon_2",
+            "android:layout_width": "31.44dp",
+            "android:layout_height": "31.44dp",
+            "android:layout_marginTop": "9.72dp",
+            "android:src": "icons/railway/ic_plate_01.png",
+            "android:scaleType": "centerCrop",
+            "android:layout_centerHorizontal": "true"
+          },
+          "children": []
+        },
+        {
+          "tag": "LinearLayout",
+          "attrs": {
+            "android:gravity": "center",
+            "android:orientation": "vertical",
+            "android:id": "ll_number_2",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "28.68dp",
+            "android:layout_marginLeft": "-1dp",
+            "android:layout_marginRight": "-1dp",
+            "android:layout_alignLeft": "@+id/iv_icon_2",
+            "android:layout_alignRight": "@+id/iv_icon_2",
+            "android:layout_alignParentBottom": "true"
+          },
+          "children": [
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_21",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            },
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_22",
+                "android:visibility": "gone",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:layout_marginTop": "-3.5dp",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            },
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_23",
+                "android:visibility": "gone",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:layout_marginTop": "-3.5dp",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "RelativeLayout",
+      "attrs": {
+        "android:id": "rl_middle_right",
+        "android:layout_width": "0dp",
+        "android:layout_height": "match_parent",
+        "android:layout_marginLeft": "1.48dp",
+        "android:layout_marginRight": "1.48dp",
+        "android:layout_weight": "1"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "28.3dp",
+            "android:textColor": "#000000",
+            "android:gravity": "center",
+            "android:id": "tv_middle_right",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginTop": "10.38dp",
+            "android:textScaleX": "0.9",
+            "android:maxLines": "1",
+            "android:layout_alignLeft": "@+id/tv_middle_right_en",
+            "android:layout_alignRight": "@+id/tv_middle_right_en"
+          },
+          "children": []
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "11.08dp",
+            "android:textColor": "#ffffff",
+            "android:gravity": "center",
+            "android:id": "tv_middle_right_en",
+            "android:background": "#ff3145",
+            "android:paddingLeft": "1dp",
+            "android:paddingRight": "1dp",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "18.68dp",
+            "android:layout_marginBottom": "5dp",
+            "android:maxLines": "1",
+            "android:layout_alignParentBottom": "true"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "tag": "RelativeLayout",
+      "attrs": {
+        "android:id": "rl_icon_3",
+        "android:layout_width": "70dp",
+        "android:layout_height": "match_parent",
+        "android:layout_marginLeft": "-20dp",
+        "android:layout_marginRight": "-20dp"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "8.31dp",
+            "android:textColor": "#000000",
+            "android:id": "tv_level_31",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginTop": "2.08dp",
+            "android:layout_marginRight": "-2.37dp",
+            "android:textScaleX": "1.15",
+            "android:layout_toLeftOf": "@+id/iv_icon_3"
+          },
+          "children": []
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "8.31dp",
+            "android:textColor": "#000000",
+            "android:id": "tv_level_32",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginLeft": "-2.37dp",
+            "android:layout_marginTop": "2.08dp",
+            "android:textScaleX": "1.15",
+            "android:layout_toRightOf": "@+id/iv_icon_3"
+          },
+          "children": []
+        },
+        {
+          "tag": "ImageView",
+          "attrs": {
+            "android:id": "iv_icon_3",
+            "android:layout_width": "31.44dp",
+            "android:layout_height": "31.44dp",
+            "android:layout_marginTop": "9.72dp",
+            "android:src": "icons/railway/ic_plate_01.png",
+            "android:scaleType": "centerCrop",
+            "android:layout_centerHorizontal": "true"
+          },
+          "children": []
+        },
+        {
+          "tag": "LinearLayout",
+          "attrs": {
+            "android:gravity": "center",
+            "android:orientation": "vertical",
+            "android:id": "ll_number_3",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "28.68dp",
+            "android:layout_marginLeft": "-1dp",
+            "android:layout_marginRight": "-1dp",
+            "android:layout_alignLeft": "@+id/iv_icon_3",
+            "android:layout_alignRight": "@+id/iv_icon_3",
+            "android:layout_alignParentBottom": "true"
+          },
+          "children": [
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_31",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            },
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_32",
+                "android:visibility": "gone",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:layout_marginTop": "-3.5dp",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            },
+            {
+              "tag": "TextView",
+              "attrs": {
+                "android:textSize": "6.52dp",
+                "android:textStyle": "bold",
+                "android:textColor": "#000000",
+                "android:gravity": "center_horizontal",
+                "android:id": "tv_number_33",
+                "android:visibility": "gone",
+                "android:layout_width": "match_parent",
+                "android:layout_height": "wrap_content",
+                "android:layout_marginTop": "-3.5dp",
+                "android:textScaleX": "1.05",
+                "android:maxLines": "1"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "RelativeLayout",
+      "attrs": {
+        "android:id": "rl_right",
+        "android:layout_width": "0dp",
+        "android:layout_height": "match_parent",
+        "android:layout_marginLeft": "1.48dp",
+        "android:layout_weight": "1"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "28.3dp",
+            "android:textColor": "#000000",
+            "android:gravity": "center",
+            "android:id": "tv_end",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginTop": "10.38dp",
+            "android:textScaleX": "0.9",
+            "android:maxLines": "1",
+            "android:layout_alignLeft": "@+id/tv_end_en",
+            "android:layout_alignRight": "@+id/tv_end_en"
+          },
+          "children": []
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "11.08dp",
+            "android:textColor": "#ffffff",
+            "android:gravity": "center",
+            "android:id": "tv_end_en",
+            "android:background": "#ff3145",
+            "android:paddingLeft": "1dp",
+            "android:paddingRight": "1dp",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "18.68dp",
+            "android:layout_marginBottom": "5dp",
+            "android:maxLines": "1",
+            "android:layout_alignParentBottom": "true"
+          },
+          "children": []
+        }
+      ]
+    }
+  ]
+}

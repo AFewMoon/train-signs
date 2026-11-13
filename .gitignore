@@ -1,0 +1,16 @@
+node_modules/
+dist/
+analysis/
+.npm-cache/
+.vite/
+.vitest/
+coverage/
+*.apk
+*.local
+.DS_Store
+Thumbs.db
+
+# 第三方工具与输入材料（不随站点发布）
+jadx-gui-1.5.6-with-jre-win/
+rea-rea-agents-6.9.0/
+*.apk

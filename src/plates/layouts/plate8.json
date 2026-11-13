@@ -1,0 +1,94 @@
+{
+  "tag": "RelativeLayout",
+  "attrs": {
+    "android:id": "rl_plate",
+    "android:background": "#ffffff",
+    "android:layout_width": "match_parent",
+    "android:layout_height": "72dp"
+  },
+  "children": [
+    {
+      "tag": "LinearLayout",
+      "attrs": {
+        "android:gravity": "center",
+        "android:orientation": "horizontal",
+        "android:id": "ll_car_number",
+        "android:background": "#000000",
+        "android:layout_width": "55dp",
+        "android:layout_height": "52dp",
+        "android:layout_centerVertical": "true"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "47dp",
+            "android:textColor": "#f3be58",
+            "android:id": "tv_car_number_1",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginLeft": "3dp",
+            "android:layout_marginTop": "1dp",
+            "android:maxLines": "1"
+          },
+          "children": []
+        },
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "47dp",
+            "android:textColor": "#f3be58",
+            "android:id": "tv_car_number_2",
+            "android:visibility": "gone",
+            "android:layout_width": "wrap_content",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginLeft": "-2dp",
+            "android:layout_marginTop": "1dp",
+            "android:maxLines": "1"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "tag": "LinearLayout",
+      "attrs": {
+        "android:orientation": "vertical",
+        "android:id": "ll_station",
+        "android:background": "#000000",
+        "android:layout_width": "match_parent",
+        "android:layout_height": "match_parent",
+        "android:layout_marginLeft": "50dp",
+        "android:layout_toRightOf": "@+id/ll_car_number"
+      },
+      "children": [
+        {
+          "tag": "TextView",
+          "attrs": {
+            "android:textSize": "37dp",
+            "android:textColor": "#a0ab69",
+            "android:gravity": "center_horizontal",
+            "android:id": "tv_number",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "wrap_content",
+            "android:layout_marginTop": "-2dp",
+            "android:maxLines": "1"
+          },
+          "children": []
+        },
+        {
+          "tag": "org.piaoyu.directionplatemaker.views.MarqueeTextView",
+          "attrs": {
+            "android:textSize": "36dp",
+            "android:textColor": "#f3be58",
+            "android:gravity": "center_horizontal",
+            "android:id": "tv_station",
+            "android:layout_width": "match_parent",
+            "android:layout_height": "wrap_content"
+          },
+          "children": []
+        }
+      ]
+    }
+  ]
+}
