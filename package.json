@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "render": "scripts\\preview.cmd",
-    "layouts": "node scripts/extract-layouts.mjs"
+    "layouts": "node scripts/extract-layouts.mjs",
+    "sync": "node scripts/github-sync.mjs"
   },
   "dependencies": {
     "idb-keyval": "^6.3.0",

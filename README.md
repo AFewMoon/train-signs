@@ -46,6 +46,15 @@ npm run render -- plate8 plate9   # Node + Skia 渲染预览图到 analysis/（W
 
 推送到 `main` 后，GitHub Actions（[deploy.yml](.github/workflows/deploy.yml)）会执行测试、构建并发布到 GitHub Pages。仓库 Settings → Pages 的 Source 需为 **GitHub Actions**。
 
+若本机 `git push` 因网络不可用，可用 GitHub API 回退同步（需要具 `contents:write` 的 token）：
+
+```powershell
+$env:GITHUB_TOKEN = '<token>'
+$env:GITHUB_REPO = 'AFewMoon/train-signs'
+$env:GITHUB_MESSAGE = 'feat: ...'
+npm run sync
+```
+
 ## 目录
 
 ```
