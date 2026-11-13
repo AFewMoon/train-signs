@@ -5,7 +5,7 @@
 //   GITHUB_MESSAGE（提交信息）、GITHUB_AUTHOR_NAME/EMAIL（可选）
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { closeSync, openSync, readFileSync, statSync } from 'node:fs'
+import { closeSync, openSync, readFileSync, unlinkSync } from 'node:fs'
 
 const token = process.env.GITHUB_TOKEN
 const repo = process.env.GITHUB_REPO
@@ -40,6 +40,22 @@ function git(args) {
   closeSync(fd)
   const text = readFileSync(out, 'utf8')
   return { status: result.status, text }
+}
+
+/** 读取 git 索引里的 blob（而不是工作区文件），避免 CRLF 等工作区差异被上传到远端。 */
+function gitBlob(path) {
+  const out = `./.git/sync-blob-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.tmp`
+  const fd = openSync(out, 'w')
+  const result = spawnSync('git', ['cat-file', 'blob', `:${path}`], { stdio: ['ignore', fd, 'inherit'] })
+  closeSync(fd)
+  if (result.status !== 0) throw new Error(`git cat-file 失败：${path}`)
+  const buffer = readFileSync(out)
+  try {
+    unlinkSync(out)
+  } catch {
+    // 临时文件清理失败不影响同步。
+  }
+  return buffer
 }
 
 function gitConfig(key, fallback) {
@@ -87,18 +103,18 @@ console.log(`远端 ${branch}: ${remoteCommitSha.slice(0, 7)}，变更 ${changes
 // 3. 上传变更文件
 const treeEntries = []
 for (const change of changes) {
-  const size = statSync(change.path).size
+  const buffer = gitBlob(change.path)
+  const size = buffer.length
   if (size > 20 * 1024 * 1024) {
     throw new Error(`文件过大，无法通过 API 上传：${change.path} (${size} bytes)`)
   }
-  const content = readFileSync(change.path).toString('base64')
   const blob = await api('/git/blobs', {
     method: 'POST',
-    body: JSON.stringify({ content, encoding: 'base64' }),
+    body: JSON.stringify({ content: buffer.toString('base64'), encoding: 'base64' }),
   })
   const expected = createHash('sha1')
     .update(Buffer.from(`blob ${size}\0`))
-    .update(readFileSync(change.path))
+    .update(buffer)
     .digest('hex')
   if (blob.sha !== expected) {
     console.warn(`警告：${change.path} 的远端 blob 与本地 git blob 不一致`)
