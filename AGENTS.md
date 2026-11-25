@@ -164,7 +164,7 @@ npm run sync
   - `createBuildContext(ratio, designHeight, spaceStyle?, widthPx?)` 是唯一的尺寸入口；所有布局/字体度量按宽度等比缩放，不要另外改字号或 margin。
   - `exportSize(ratio, requestedWidth)` 统一夹取：320–8192px、画布面积 ≤ 16,000,000px（Safari 安全线），返回 `{width,height,clamped,reason}`。
 - 预览固定 1370px；导出时才用 `renderPlateCanvas(..., {widthPx})` 重新排版，避免输入时高分辨率重绘卡顿。
-- 图库始终存 PNG（按导出分辨率），SVG/JPEG 导出也留档。
+- 图库始终存 PNG（按导出分辨率），SVG/WebP 导出也留档。
 - `Settings` 增加字段时必须处理旧 localStorage：`loadSettings()` 做迁移与默认值。
 
 ### SVG（真矢量）

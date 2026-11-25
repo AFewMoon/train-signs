@@ -105,8 +105,8 @@ export async function renderPlateCanvas(
   return { canvas, ...result }
 }
 
-export function canvasToBlob(canvas: HTMLCanvasElement, format: 'png' | 'jpeg'): Promise<Blob | null> {
-  const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png'
+export function canvasToBlob(canvas: HTMLCanvasElement, format: 'png' | 'webp'): Promise<Blob | null> {
+  const mime = format === 'webp' ? 'image/webp' : 'image/png'
   return new Promise((resolve) => canvas.toBlob(resolve, mime, 1))
 }
 
@@ -121,8 +121,8 @@ export function downloadBlob(blob: Blob, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-export function exportCanvas(canvas: HTMLCanvasElement, format: 'png' | 'jpeg', name: string): void {
+export function exportCanvas(canvas: HTMLCanvasElement, format: 'png' | 'webp', name: string): void {
   void canvasToBlob(canvas, format).then((blob) => {
-    if (blob) downloadBlob(blob, `${name}.${format === 'jpeg' ? 'jpg' : 'png'}`)
+    if (blob) downloadBlob(blob, `${name}.${format}`)
   })
 }

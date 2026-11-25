@@ -107,7 +107,7 @@ const spaceOptions: Array<{ label: string; value: SpaceStyle }> = [
 
 const formatOptions: Array<{ label: string; value: ImageFormat }> = [
   { label: 'PNG（无损，推荐）', value: 'png' },
-  { label: 'JPEG（体积更小）', value: 'jpeg' },
+  { label: 'WebP（体积更小）', value: 'webp' },
   { label: 'SVG（真矢量，适合印刷）', value: 'svg' },
 ]
 

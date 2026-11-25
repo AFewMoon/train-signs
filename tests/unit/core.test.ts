@@ -8,7 +8,7 @@ import {
   widthFactorSum,
 } from '../../src/core/text'
 import { toPinyin, loadPinyin } from '../../src/core/pinyin'
-import { formatTimestamp } from '../../src/core/storage'
+import { formatTimestamp, loadSettings } from '../../src/core/storage'
 
 describe('文本压缩（c.a.a.f.c/f）', () => {
   it('字宽系数按 App 表累加', () => {
@@ -69,5 +69,18 @@ describe('图库文件名', () => {
   it('格式为 yyyyMMddHHmmssSSS', () => {
     const stamp = formatTimestamp(new Date(2026, 10, 13, 12, 5, 6, 7))
     expect(stamp).toBe('20261113120506007')
+  })
+})
+
+describe('导出格式设置', () => {
+  it('旧 jpeg 设置迁移为 webp', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: () => JSON.stringify({ format: 'jpeg', exportWidth: 1920, spaceStyle: 1 }),
+      setItem: () => undefined,
+    })
+    const settings = loadSettings()
+    vi.unstubAllGlobals()
+    expect(settings.format).toBe('webp')
+    expect(settings.exportWidth).toBe(1920)
   })
 })

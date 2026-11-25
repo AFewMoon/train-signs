@@ -425,7 +425,7 @@ function applySettings(next: Settings): void {
 
 const exporting = ref(false)
 const formatLabel = computed(() =>
-  settings.format === 'svg' ? 'SVG' : settings.format === 'jpeg' ? 'JPEG' : 'PNG',
+  settings.format === 'svg' ? 'SVG' : settings.format === 'webp' ? 'WebP' : 'PNG',
 )
 
 async function saveToGallery(canvas: HTMLCanvasElement, width: number, height: number): Promise<void> {

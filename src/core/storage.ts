@@ -1,7 +1,7 @@
 import { del, get, keys, set } from 'idb-keyval'
 
 export type SpaceStyle = 0 | 1 | 2
-export type ImageFormat = 'png' | 'jpeg' | 'svg'
+export type ImageFormat = 'png' | 'webp' | 'svg'
 
 export interface Settings {
   spaceStyle: SpaceStyle
@@ -20,9 +20,17 @@ export function loadSettings(): Settings {
     if (!raw) return fallback
     const parsed = JSON.parse(raw) as Partial<Settings>
     const width = Number(parsed.exportWidth)
+    // 旧版本可能保存了已移除的 'jpeg'，按字符串读取以便识别迁移。
+    const format = (parsed as { format?: string }).format
     return {
       spaceStyle: parsed.spaceStyle === 1 || parsed.spaceStyle === 2 ? parsed.spaceStyle : 0,
-      format: parsed.format === 'jpeg' || parsed.format === 'svg' ? parsed.format : 'png',
+      // 旧版本保存的 jpeg 设置迁移为 webp，保留用户「体积更小」的选择。
+      format:
+        format === 'jpeg' || format === 'webp' || format === 'svg'
+          ? format === 'jpeg'
+            ? 'webp'
+            : format
+          : 'png',
       exportWidth: Number.isFinite(width) ? Math.round(width) : DEFAULT_EXPORT_WIDTH,
     }
   } catch {
