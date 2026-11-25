@@ -150,6 +150,7 @@ textarea {
   padding: clamp(10px, 1.6vw, 20px);
   position: sticky;
   top: 16px;
+  z-index: 5; /* 高于表单中 position: relative 的字段，避免滚动时文字盖到预览上 */
 }
 
 .preview-frame {
