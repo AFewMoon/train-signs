@@ -47,6 +47,7 @@ function stationPatch(
   flush: boolean,
   sizePx: number,
   marginTop: number,
+  baselineOffset: number,
 ): NodePatch {
   const normalized = normalizeText(text, spaceStyle)
   return {
@@ -55,6 +56,7 @@ function stationPatch(
     scaleX: stationScaleX(normalized, spaceStyle, flush),
     font: 'fzxbs',
     margin: { t: marginTop },
+    baselineOffset,
   }
 }
 
@@ -153,13 +155,18 @@ export const plate7: PlateSpec = {
     patches.set('ll_parent', { margin: { b: ctx.k(8.1) } })
 
     // 中文站名：V(...,25.9) + X(...,-1.5)，字体 fzxbs
+    // 25.9dp 行盒高于「路徽底部→拼音栏顶部」的可用高度，原样绘制会被列容器裁掉字形顶部；
+    // 按封面把基线整体下移 4 个单位，字形仍完整落在路徽下方、拼音栏上方。
     const stations: Array<[string, string]> = [
       ['tv_start', 'start'],
       ['tv_middle', 'middle'],
       ['tv_end', 'end'],
     ]
     for (const [id, key] of stations) {
-      patches.set(id, stationPatch(str(values, key), ctx.spaceStyle, flush, ctx.k(25.9), ctx.k(-1.5)))
+      patches.set(
+        id,
+        stationPatch(str(values, key), ctx.spaceStyle, flush, ctx.k(25.9), ctx.k(-1.5), ctx.k(4)),
+      )
     }
 
     // 拼音栏：G(...,14.05) + V(...,10.85)，字体 times；h(...,0,1.0) → fit mode 0 / maxScale 1

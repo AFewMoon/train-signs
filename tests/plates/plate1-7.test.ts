@@ -114,6 +114,13 @@ describe('plate7 套跑7', () => {
     near(patches.get('tv_start')?.scaleX, (0.88 * 4.3) / 5)
   })
 
+  it('站名基线下移，避免顶部被父容器裁剪', () => {
+    const patches = plate7.build({ ...plate7.defaults }, ctx7)
+    near(patches.get('tv_start')?.baselineOffset, ctx7.k(4))
+    near(patches.get('tv_middle')?.baselineOffset, ctx7.k(4))
+    near(patches.get('tv_end')?.baselineOffset, ctx7.k(4))
+  })
+
   it('拼音栏贴边默认开启，取消后回加 3 单位内边距', () => {
     const flush = plate7.build({ ...plate7.defaults }, ctx7)
     const padded = plate7.build({ ...plate7.defaults, alignSides: false }, ctx7)
