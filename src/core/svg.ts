@@ -20,12 +20,45 @@ export interface SvgHost {
   imageDataUrl(src: string): Promise<string>
 }
 
+interface OpentypePathCommand {
+  type: string
+  x?: number
+  y?: number
+  x1?: number
+  y1?: number
+  x2?: number
+  y2?: number
+}
+
+interface OpentypePath {
+  commands: OpentypePathCommand[]
+  toPathData(precision: number): string
+}
+
 interface OpentypeFont {
   charToGlyphIndex(char: string): number
   charToGlyph(char: string): {
     index: number
-    getPath(x: number, y: number, size: number): { toPathData(precision: number): string }
+    getPath(x: number, y: number, size: number): OpentypePath
   }
+}
+
+/**
+ * opentype.js 2.0.0 的 toPathData() 在坐标带浮点噪声（如 13.000000000000002）时，
+ * 会把小数部分拼成 "1.7e-15e+2" 交给 Math.round，最终输出 NaN；浏览器遇到非法路径
+ * 片段会截断后续绘制，表现为文字残缺。导出精度本就是 2 位小数，这里先把坐标取整。
+ */
+export function toSafePathData(path: OpentypePath): string {
+  const keys = ['x', 'y', 'x1', 'y1', 'x2', 'y2'] as const
+  for (const command of path.commands) {
+    for (const key of keys) {
+      const value = command[key]
+      if (typeof value !== 'number') continue
+      const rounded = Math.round(value * 100) / 100
+      command[key] = Object.is(rounded, -0) ? 0 : rounded
+    }
+  }
+  return path.toPathData(2)
 }
 
 function fmt(value: number): string {
@@ -196,8 +229,9 @@ export function createBrowserSvgHost(): SvgHost {
       if (!parsed) return null
       try {
         if (parsed.charToGlyphIndex(char) === 0) return null
-        const path = parsed.charToGlyph(char).getPath(0, 0, sizePx)
-        return path.toPathData(2)
+        const data = toSafePathData(parsed.charToGlyph(char).getPath(0, 0, sizePx))
+        // 极端情况下仍可能包含非法数值；返回 null 触发整段文字回退为位图。
+        return /NaN|Infinity/.test(data) ? null : data
       } catch {
         return null
       }

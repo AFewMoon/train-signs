@@ -1,6 +1,14 @@
+import { readFileSync } from 'node:fs'
+import { parse } from 'opentype.js'
 import { describe, expect, it } from 'vitest'
-import { serializeBox, type SvgHost } from '../../src/core/svg'
+import { serializeBox, toSafePathData, type SvgHost } from '../../src/core/svg'
 import type { Box } from '../../src/core/types'
+
+interface TestGlyphFont {
+  charToGlyph(char: string): {
+    getPath(x: number, y: number, size: number): Parameters<typeof toSafePathData>[0]
+  }
+}
 
 function makeBox(overrides: Partial<Box> = {}): Box {
   return {
@@ -90,5 +98,15 @@ describe('SVG 序列化', () => {
   it('隐藏节点不输出', async () => {
     const svg = await serializeBox(makeBox({ visible: false, bg: '#000000' }), makeHost())
     expect(svg).not.toContain('<rect')
+  })
+
+  it('4096 宽度的浮点噪声不再产生 NaN 路径', () => {
+    const font = parse(new Uint8Array(readFileSync('public/fonts/hyzhj.ttf'))) as TestGlyphFont
+    // 4096 宽导出时该字号的坐标会出现极小小数噪声，触发 opentype.js 2.0.0 的 NaN 缺陷。
+    const path = font.charToGlyph('快').getPath(0, 0, 113.77777777777779)
+    const data = toSafePathData(path)
+    expect(data).not.toContain('NaN')
+    expect(data).not.toContain('Infinity')
+    expect(data.length).toBeGreaterThan(100)
   })
 })
