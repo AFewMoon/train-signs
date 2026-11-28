@@ -78,6 +78,25 @@ describe('SVG 序列化', () => {
     expect(svg).toContain('scale(1 1)')
   })
 
+  it('无 kerning 文本按逐字累加定位，避免逐前缀测量', async () => {
+    const measured: string[] = []
+    const host = makeHost()
+    host.measureRaw = (text, _font, size) => {
+      measured.push(text)
+      return {
+        width: Array.from(text).length * size * 0.6,
+        ascent: size * 0.8,
+        descent: size * 0.2,
+      }
+    }
+
+    await serializeBox(makeBox({ children: [textBox('成都昆明')] }), host)
+
+    // 只有整串宽度一次；其余都是单字测量，不再出现 2 字以上的前缀。
+    expect(measured.filter((text) => text.length > 1)).toEqual(['成都昆明'])
+    expect(measured.filter((text) => text.length === 1)).toHaveLength(4)
+  })
+
   it('缺字时整段回退为位图', async () => {
     const svg = await serializeBox(makeBox({ children: [textBox('A缺B')] }), makeHost('缺'))
     expect(svg).toContain('<image')

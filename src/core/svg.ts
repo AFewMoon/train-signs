@@ -1,7 +1,7 @@
 import type { Box, FontKey } from './types'
-import { FONTS } from './fonts'
+import { FONTS, loadFontBuffer } from './fonts'
 import { assetUrl, computeTextRun, drawTextBox } from './render'
-import type { DrawOptions } from './plate-render'
+import type { DrawOptions, PreparedPlate } from './plate-render'
 import { layoutPlateForExport } from './plate-render'
 import type { PlateSpec } from '../plates/types'
 
@@ -18,6 +18,8 @@ export interface SvgHost {
   /** 把单个 TextView 以 Canvas 位图输出（含裁剪），返回 data URL。 */
   rasterText(box: Box): Promise<string>
   imageDataUrl(src: string): Promise<string>
+  /** 预先并行解析本次导出需要的字体，避免按文本出现顺序串行解析。 */
+  preloadFonts?(fonts: FontKey[]): Promise<void>
 }
 
 interface OpentypePathCommand {
@@ -32,7 +34,9 @@ interface OpentypePathCommand {
 
 interface OpentypePath {
   commands: OpentypePathCommand[]
-  toPathData(precision: number): string
+  toPathData(
+    options: number | { decimalPlaces?: number; optimize?: boolean; flipY?: boolean },
+  ): string
 }
 
 interface OpentypeFont {
@@ -58,7 +62,8 @@ export function toSafePathData(path: OpentypePath): string {
       command[key] = Object.is(rounded, -0) ? 0 : rounded
     }
   }
-  return path.toPathData(2)
+  // 坐标已取整；关闭 opentype 默认的 optimize（内部会 JSON 克隆并优化命令），导出更快且几何不变。
+  return path.toPathData({ decimalPlaces: 2, optimize: false, flipY: false })
 }
 
 function fmt(value: number): string {
@@ -107,19 +112,33 @@ export async function serializeBox(root: Box, host: SvgHost): Promise<string> {
     const clip = clipRect(run.contentX, run.contentY, run.contentW, run.contentH)
     const groupTransform = `translate(${fmt(run.originX)} ${fmt(run.baseline)}) scale(${fmt(t.scaleX)} 1)`
 
+    const chars = Array.from(t.value)
+    // 逐字宽度累加；若与整串宽度一致（CJK 等无 kerning），用累加位置，避免逐前缀 O(n²) shaping。
+    const widths = chars.map((char) => host.measureRaw(char, t.font, t.sizePx, t.bold).width)
+    const sumWidth = widths.reduce((sum, width) => sum + width, 0)
+    // 阈值取 0.05px：CJK 累加与整串宽度几乎完全相等；有 kerning/ligature 的拉丁文本会回退逐前缀测量。
+    const useAdvances = Math.abs(sumWidth - metrics.width) < 0.05
+
     let prefix = ''
+    let advance = 0
     const paths: string[] = []
     let fallback = false
-    for (const char of Array.from(t.value)) {
+    for (let i = 0; i < chars.length; i += 1) {
+      const char = chars[i]
       const pathData = await host.glyphPath(t.font, char, t.sizePx)
       if (pathData === null) {
         fallback = true
         break
       }
-      const x = host.measureRaw(prefix, t.font, t.sizePx, t.bold).width
+      const x = useAdvances ? advance : host.measureRaw(prefix, t.font, t.sizePx, t.bold).width
       prefix += char
+      advance += widths[i]
       if (pathData) {
         paths.push(`<path d="${pathData}" transform="translate(${fmt(x)} 0)"/>`)
+      }
+      // 每 64 个字符让出一次主线程，保证页面能重绘“导出中…”状态。
+      if ((i + 1) % 64 === 0) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0))
       }
     }
 
@@ -159,25 +178,29 @@ export async function serializeBox(root: Box, host: SvgHost): Promise<string> {
   return `<defs>${defs.join('')}</defs>${body}`
 }
 
+/** 图标 data URI 跨导出复用，避免每次导出重新 fetch/编码。 */
+const imageCache = new Map<string, Promise<string>>()
+
 /** 浏览器环境下构建 SVG 文件内容。 */
 export async function buildSvg(
   spec: PlateSpec,
   values: Record<string, string | boolean>,
   options: DrawOptions = {},
-): Promise<{ svg: string; width: number; height: number }> {
-  const { box, width, height } = await layoutPlateForExport(spec, values, options)
+): Promise<{ svg: string; width: number; height: number; prepared: PreparedPlate }> {
+  const prepared = await layoutPlateForExport(spec, values, options)
   const host = createBrowserSvgHost()
-  const content = await serializeBox(box, host)
+  await host.preloadFonts?.(spec.fonts)
+  const content = await serializeBox(prepared.box, host)
   const title = escapeXml(`列车水牌 · ${spec.name}`)
   const svg = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${prepared.width}" height="${prepared.height}" viewBox="0 0 ${prepared.width} ${prepared.height}">`,
     `<title>${title}</title>`,
     '<desc>列车水牌制作 Web 版 · 由布局常量与字体轮廓生成</desc>',
     content,
     '</svg>',
   ].join('\n')
-  return { svg, width, height }
+  return { svg, width: prepared.width, height: prepared.height, prepared }
 }
 
 /** 浏览器侧 host：Canvas 测量、opentype 字形路径、位图/图标回退。 */
@@ -186,7 +209,7 @@ export function createBrowserSvgHost(): SvgHost {
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas 2D 不可用')
   const fontCache = new Map<FontKey, Promise<OpentypeFont | null>>()
-  const imageCache = new Map<string, Promise<string>>()
+  const measureCache = new Map<string, { width: number; ascent: number; descent: number }>()
 
   const loadFont = (key: FontKey): Promise<OpentypeFont | null> => {
     if (key === 'sans') return Promise.resolve(null)
@@ -194,8 +217,9 @@ export function createBrowserSvgHost(): SvgHost {
     if (cached) return cached
     const promise = (async () => {
       try {
-        const def = FONTS[key]
-        const buffer = await (await fetch(assetUrl(`fonts/${def.file}`))).arrayBuffer()
+        // 复用预览已加载的字体字节（PROD 命中 Cache API），避免导出时重新下载。
+        const buffer = await loadFontBuffer(key)
+        if (!buffer) return null
         // Vite 可能把 opentype.js 解析为 UMD（仅 default 导出），需要兼容两种形态。
         const mod = (await import('opentype.js')) as unknown as {
           parse?: (data: ArrayBuffer | Uint8Array) => unknown
@@ -215,14 +239,22 @@ export function createBrowserSvgHost(): SvgHost {
 
   return {
     measureRaw(text, font, sizePx, bold) {
+      const key = `${font}|${bold ? 1 : 0}|${sizePx}|${text}`
+      const cached = measureCache.get(key)
+      if (cached) return cached
       const def = font === 'sans' ? 'sans-serif' : `'${FONTS[font].family}', sans-serif`
       ctx.font = `${bold ? '700 ' : ''}${sizePx}px ${def}`
       const m = ctx.measureText(text || '中')
-      return {
+      const result = {
         width: text ? m.width : 0,
         ascent: m.fontBoundingBoxAscent ?? sizePx * 0.88,
         descent: m.fontBoundingBoxDescent ?? sizePx * 0.22,
       }
+      measureCache.set(key, result)
+      return result
+    },
+    async preloadFonts(fonts) {
+      await Promise.all(fonts.map((font) => loadFont(font)))
     },
     async glyphPath(font, char, sizePx) {
       const parsed = await loadFont(font)

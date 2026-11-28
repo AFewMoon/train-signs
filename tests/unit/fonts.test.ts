@@ -63,6 +63,29 @@ describe('字体 Cache API', () => {
   })
 })
 
+describe('SVG 导出复用字体字节', () => {
+  it('同一字体并发读取只请求一次，返回相同字节', async () => {
+    vi.stubGlobal('caches', undefined)
+    const fetchMock = vi.fn(async () => new Response(new Uint8Array([4, 5, 6])))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { loadFontBuffer } = await import('../../src/core/fonts')
+    const [a, b] = await Promise.all([loadFontBuffer('arial'), loadFontBuffer('arial')])
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(Array.from(new Uint8Array(a!))).toEqual([4, 5, 6])
+    expect(Array.from(new Uint8Array(b!))).toEqual([4, 5, 6])
+  })
+
+  it('sans 无需字体文件，直接返回 null', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const { loadFontBuffer } = await import('../../src/core/fonts')
+    await expect(loadFontBuffer('sans')).resolves.toBeNull()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
 describe('字体加载状态', () => {
   it('并发加载同一字体只创建一次 FontFace，settle 后 isFontsReady 为 true', async () => {
     const created: string[] = []

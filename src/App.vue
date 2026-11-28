@@ -461,10 +461,12 @@ async function download(): Promise<void> {
     const options = { spaceStyle: settings.spaceStyle, widthPx: target.width }
 
     if (settings.format === 'svg') {
-      const { svg } = await buildSvg(current.value, snapshot, options)
+      const { svg, prepared } = await buildSvg(current.value, snapshot, options)
       downloadBlob(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }), `${name}.svg`)
-      const { canvas, width, height } = await renderPlateCanvas(current.value, snapshot, options)
-      await saveToGallery(canvas, width, height)
+      // 复用 SVG 已完成的布局与图片加载，避免再走一次 renderPlateCanvas。
+      const canvas = document.createElement('canvas')
+      paintPlate(canvas, prepared)
+      await saveToGallery(canvas, prepared.width, prepared.height)
       showToast('SVG 已生成，PNG 已存入图库')
     } else {
       const { canvas, width, height } = await renderPlateCanvas(current.value, snapshot, options)

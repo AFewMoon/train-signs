@@ -85,6 +85,35 @@ async function deleteFontCache(url: string): Promise<void> {
   }
 }
 
+const fontBufferLoading = new Map<FontKey, Promise<ArrayBuffer | null>>()
+
+/**
+ * 读取字体字节供 SVG 导出解析字形：PROD 优先命中预览写入的 Cache API，DEV 直接 fetch；
+ * 同一字体的并发请求只发一次，不做长期缓存，避免额外常驻内存。
+ */
+export function loadFontBuffer(key: FontKey): Promise<ArrayBuffer | null> {
+  if (key === 'sans') return Promise.resolve(null)
+  const existing = fontBufferLoading.get(key)
+  if (existing) return existing
+  const def = FONTS[key]
+  const url = assetUrl(`fonts/${def.file}`)
+  const useCache = import.meta.env.PROD && !FONT_CACHE_SKIP.has(def.file)
+  const promise = (async () => {
+    if (useCache) {
+      const cached = await readFontFromCache(url)
+      if (cached) return cached
+    }
+    try {
+      const response = await fetch(url)
+      return response.ok ? await response.arrayBuffer() : null
+    } catch {
+      return null
+    }
+  })().finally(() => fontBufferLoading.delete(key))
+  fontBufferLoading.set(key, promise)
+  return promise
+}
+
 let measureContext: CanvasRenderingContext2D | null = null
 let fontVersion = 0
 const metricsCache = new Map<string, TextMetrics>()
