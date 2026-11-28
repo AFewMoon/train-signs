@@ -5,6 +5,7 @@ import {
   estimateLength,
   fitScaleX,
   normalizeText,
+  sanitizeTrainNumber,
   widthFactorSum,
 } from '../../src/core/text'
 import { toPinyin, loadPinyin } from '../../src/core/pinyin'
@@ -36,6 +37,23 @@ describe('文本压缩（c.a.a.f.c/f）', () => {
     expect(estimateLength('', 0)).toBe(0)
     expect(estimateLength('成都', 0)).toBe(2)
     expect(estimateLength('A-B', 0)).toBeCloseTo(2.5, 5)
+  })
+})
+
+describe('车次输入全字母支持', () => {
+  it('任意字母（含 V/v）、数字与分隔符原样保留', () => {
+    expect(sanitizeTrainNumber('V123/v456 G7D8K9T1Z2C3Y4L5N6A7')).toBe(
+      'V123/v456 G7D8K9T1Z2C3Y4L5N6A7',
+    )
+    expect(sanitizeTrainNumber('K7/8→9—0')).toBe('K7/8→9—0')
+  })
+
+  it('过滤表情等无关符号', () => {
+    expect(sanitizeTrainNumber('V1🚄23')).toBe('V123')
+  })
+
+  it('保留汉字以兼容中文车次', () => {
+    expect(sanitizeTrainNumber('蓉港直达')).toBe('蓉港直达')
   })
 })
 

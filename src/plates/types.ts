@@ -1,6 +1,6 @@
 import type { FontKey, LayoutNode, PatchMap, PlateValues } from '../core/types'
 
-export type FieldKind = 'text' | 'textarea' | 'number' | 'select' | 'checkbox'
+export type FieldKind = 'text' | 'textarea' | 'number' | 'select' | 'checkbox' | 'train'
 
 export interface FieldOption {
   label: string

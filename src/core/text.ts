@@ -138,6 +138,16 @@ export function normalizeText(text: string, spaceStyle: SpaceStyle): string {
     .replace(/\n/g, '')
 }
 
+/**
+ * 车次输入过滤：保留任意语言的字母（含 V/v）与数字、空格及常见分隔符；
+ * 只过滤表情等无关符号。用 Unicode 属性类，不再维护具体字母白名单。
+ */
+const TRAIN_NUMBER_DISALLOWED = /[^\p{L}\p{N} \/→—\-()（）·]/gu
+
+export function sanitizeTrainNumber(text: string): string {
+  return text.replace(TRAIN_NUMBER_DISALLOWED, '')
+}
+
 /** c.a.a.f.c.m()：估算显示宽度（单位：字符）。 */
 export function estimateLength(text: string, spaceStyle: SpaceStyle): number {
   if (!text) return 0

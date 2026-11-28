@@ -106,8 +106,8 @@ const fields: PlateField[] = [
   { key: 'leftStartEn2', label: '左侧始发站2（拼音）', kind: 'text', maxLength: 17, pinyinOf: 'leftStart2', placeholder: '如 JIAGEDAQI' },
   { key: 'leftEnd2', label: '左侧终到站2（中文，开启双站名后显示）', kind: 'text', maxLength: 5, placeholder: '如 哈尔滨' },
   { key: 'leftEndEn2', label: '左侧终到站2（拼音）', kind: 'text', maxLength: 17, pinyinOf: 'leftEnd2', placeholder: '如 HAERBIN' },
-  { key: 'leftNumber1', label: '左侧车次 第一行', kind: 'text', maxLength: 15, placeholder: '如 K7104' },
-  { key: 'leftNumber2', label: '左侧车次 第二行（可选）', kind: 'text', maxLength: 15, placeholder: '如 K7103' },
+  { key: 'leftNumber1', label: '左侧车次 第一行', kind: 'train', maxLength: 15, placeholder: '如 K7104' },
+  { key: 'leftNumber2', label: '左侧车次 第二行（可选）', kind: 'train', maxLength: 15, placeholder: '如 K7103' },
   // 右侧
   { key: 'rightStart', label: '右侧始发站（中文）', kind: 'text', maxLength: 5, required: true, group: '右侧', placeholder: '如 漠河' },
   { key: 'rightStartEn', label: '右侧始发站（拼音）', kind: 'text', maxLength: 17, required: true, pinyinOf: 'rightStart', placeholder: '如 MOHE' },
@@ -117,12 +117,12 @@ const fields: PlateField[] = [
   { key: 'rightStartEn2', label: '右侧始发站2（拼音）', kind: 'text', maxLength: 17, pinyinOf: 'rightStart2', placeholder: '如 MOHE' },
   { key: 'rightEnd2', label: '右侧终到站2（中文，开启双站名后显示）', kind: 'text', maxLength: 5, placeholder: '如 哈尔滨' },
   { key: 'rightEndEn2', label: '右侧终到站2（拼音）', kind: 'text', maxLength: 17, pinyinOf: 'rightEnd2', placeholder: '如 HAERBIN' },
-  { key: 'rightNumber1', label: '右侧车次 第一行', kind: 'text', maxLength: 15, placeholder: '如 K7042' },
-  { key: 'rightNumber2', label: '右侧车次 第二行（可选）', kind: 'text', maxLength: 15, placeholder: '如 K7041' },
+  { key: 'rightNumber1', label: '右侧车次 第一行', kind: 'train', maxLength: 15, placeholder: '如 K7042' },
+  { key: 'rightNumber2', label: '右侧车次 第二行（可选）', kind: 'train', maxLength: 15, placeholder: '如 K7041' },
   // 中缝车次
-  { key: 'middleNumber1', label: '中间车次 第一行（可选）', kind: 'text', maxLength: 20, group: '中间路徽', placeholder: '如 0' },
-  { key: 'middleNumber2', label: '中间车次 第二行（可选）', kind: 'text', maxLength: 20, placeholder: '如 0' },
-  { key: 'middleNumber3', label: '中间车次 第三行（可选）', kind: 'text', maxLength: 20, placeholder: '如 0' },
+  { key: 'middleNumber1', label: '中间车次 第一行（可选）', kind: 'train', maxLength: 20, group: '中间路徽', placeholder: '如 0' },
+  { key: 'middleNumber2', label: '中间车次 第二行（可选）', kind: 'train', maxLength: 20, placeholder: '如 0' },
+  { key: 'middleNumber3', label: '中间车次 第三行（可选）', kind: 'train', maxLength: 20, placeholder: '如 0' },
   { key: 'icon', label: '路徽图标', kind: 'select', options: ICONS, group: '中间路徽' },
   // 列车等级
   { key: 'levelLeft', label: '左侧列车等级（同时决定等级颜色）', kind: 'select', options: LEFT_LEVEL_OPTIONS, group: '列车等级' },

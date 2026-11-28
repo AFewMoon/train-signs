@@ -165,6 +165,7 @@ import { exportSize } from './plates/types'
 import { assetUrl, coverThumb } from './core/render'
 import { ensureFonts, isFontsReady } from './core/fonts'
 import { loadPinyin, toPinyin } from './core/pinyin'
+import { sanitizeTrainNumber } from './core/text'
 import {
   addGalleryItem,
   formatTimestamp,
@@ -382,13 +383,15 @@ function showGroup(index: number): boolean {
 
 function onInput(field: PlateField, event: Event): void {
   const target = event.target as HTMLInputElement | HTMLTextAreaElement
-  values[field.key] = target.value
+  const value = field.kind === 'train' ? sanitizeTrainNumber(target.value) : target.value
+  if (field.kind === 'train' && value !== target.value) target.value = value
+  values[field.key] = value
   for (const dependent of current.value.fields) {
     if (dependent.pinyinOf !== field.key) continue
     const currentText = strValue(dependent.key)
     const autoText = autoValues.get(dependent.key)
     if (!currentText || currentText === autoText) {
-      const generated = toPinyin(target.value)
+      const generated = toPinyin(value)
       values[dependent.key] = generated
       autoValues.set(dependent.key, generated)
     }
