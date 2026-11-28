@@ -68,9 +68,9 @@ describe('套跑4（Plate4）', () => {
     }
   })
 
-  it('画布为 1370×266', () => {
-    expect(box.w).toBe(1370)
-    expect(box.h).toBeCloseTo(1370 / 5.15, 4)
+  it('画布为 1000×194', () => {
+    expect(box.w).toBe(1000)
+    expect(box.h).toBeCloseTo(1000 / 5.15, 4)
   })
 
   it('主行高度等于版心高度，默认左右 padding 为 k(6)', () => {
@@ -162,9 +162,9 @@ describe('套跑6（Plate6）', () => {
     }
   })
 
-  it('画布为 1370×269', () => {
-    expect(box.w).toBe(1370)
-    expect(box.h).toBeCloseTo(1370 / 5.1, 4)
+  it('画布为 1000×196', () => {
+    expect(box.w).toBe(1000)
+    expect(box.h).toBeCloseTo(1000 / 5.1, 4)
   })
 
   it('默认贴边：拼音栏铺满画布左右边缘', () => {

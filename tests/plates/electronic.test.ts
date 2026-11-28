@@ -45,14 +45,14 @@ function byId(box: Box, id: string): Box {
 }
 
 function expectedHeight(spec: typeof plate8): number {
-  return 1370 / spec.ratio
+  return 1000 / spec.ratio
 }
 
 describe('电子水牌1（Plate8）布局', () => {
   const box = render(plate8)
 
-  it('画布为 1370×251', () => {
-    expect(box.w).toBe(1370)
+  it('画布为 1000×183', () => {
+    expect(box.w).toBe(1000)
     expect(box.h).toBeCloseTo(expectedHeight(plate8), 3)
   })
 
@@ -82,14 +82,14 @@ describe('电子水牌1（Plate8）布局', () => {
 describe('电子水牌2（Plate9）布局', () => {
   const box = render(plate9)
 
-  it('画布为 1370×367', () => {
-    expect(box.w).toBe(1370)
-    expect(box.h).toBeCloseTo(367, 0)
+  it('画布为 1000×268', () => {
+    expect(box.w).toBe(1000)
+    expect(box.h).toBeCloseTo(expectedHeight(plate9), 3)
   })
 
   it('车厢号区宽 105 设计单位', () => {
     const car = byId(box, 'll_car_number')
-    expect(car.w).toBeCloseTo((1370 / 3.7333 / 106) * 105, 3)
+    expect(car.w).toBeCloseTo((1000 / 3.7333 / 106) * 105, 3)
   })
 
   it('两行文字都从车厢号区右侧开始', () => {

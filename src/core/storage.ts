@@ -11,7 +11,7 @@ export interface Settings {
 }
 
 const SETTINGS_KEY = 'train-signs:settings'
-const DEFAULT_EXPORT_WIDTH = 1370
+const DEFAULT_EXPORT_WIDTH = 1000
 
 export function loadSettings(): Settings {
   const fallback: Settings = { spaceStyle: 0, format: 'png', exportWidth: DEFAULT_EXPORT_WIDTH }

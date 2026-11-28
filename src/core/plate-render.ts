@@ -8,7 +8,7 @@ import { createBuildContext, exportSize } from '../plates/types'
 
 export interface DrawOptions {
   spaceStyle?: 0 | 1 | 2
-  /** 导出宽度（px）；省略时使用默认 1370。高度按模板比例自动计算。 */
+  /** 导出宽度（px）；省略时使用默认 1000。高度按模板比例自动计算。 */
   widthPx?: number
 }
 

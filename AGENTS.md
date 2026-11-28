@@ -45,7 +45,7 @@ $env:JADX_CACHE_DIR="$PWD\analysis\jadx-cache"
 
 ### Android 布局语义（已在本项目引擎实现）
 
-- 水牌高度：`l = (屏宽px - 20dp) / ratio`，设计单位换算 `k(unit) = l * unit / designHeight`；Web 固定导出宽 1370px、参考版心宽 340dp。
+- 水牌高度：`l = (屏宽px - 20dp) / ratio`，设计单位换算 `k(unit) = l * unit / designHeight`；Web 预览与默认导出宽 1000px、参考版心宽 340dp。
 - `match_parent` + 单侧锚点（`toLeftOf`/`toRightOf`/`alignParentRight`）宽度 = 父边缘到锚点的**剩余空间**；负 margin 会向外扩展；双侧锚点取两者之间；`match_parent` 时该侧 margin 要计入。
 - `GONE` 子节点不计入 `wrap_content`；`0dp + layout_weight` 不能当作固定尺寸，`>0dp` 才是固定值。
 - 固定 dp 的 `View`/`ImageView`/分隔线要计入父级 `wrap_content`。
@@ -162,8 +162,8 @@ npm run sync
 
 - `src/plates/types.ts`：
   - `createBuildContext(ratio, designHeight, spaceStyle?, widthPx?)` 是唯一的尺寸入口；所有布局/字体度量按宽度等比缩放，不要另外改字号或 margin。
-  - `exportSize(ratio, requestedWidth)` 统一夹取：320–8192px、画布面积 ≤ 16,000,000px（Safari 安全线），返回 `{width,height,clamped,reason}`。
-- 预览固定 1370px；导出时才用 `renderPlateCanvas(..., {widthPx})` 重新排版，避免输入时高分辨率重绘卡顿。
+  - `exportSize(ratio, requestedWidth)` 统一夹取：320–8192px，返回 `{width,height,clamped,reason}`。
+- 预览固定 1000px；导出时才用 `renderPlateCanvas(..., {widthPx})` 重新排版，避免输入时高分辨率重绘卡顿。
 - 图库始终存 PNG（按导出分辨率），SVG/WebP 导出也留档。
 - `Settings` 增加字段时必须处理旧 localStorage：`loadSettings()` 做迁移与默认值。
 

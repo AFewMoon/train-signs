@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   EXPORT_WIDTH,
-  MAX_EXPORT_AREA,
   MAX_EXPORT_WIDTH,
   MIN_EXPORT_WIDTH,
   createBuildContext,
@@ -9,16 +8,28 @@ import {
 } from '../../src/plates/types'
 
 describe('导出尺寸', () => {
-  it('默认按 1370 宽与模板比例计算', () => {
+  it('默认按 1000 宽与模板比例计算', () => {
     const size = exportSize(5)
     expect(size.width).toBe(EXPORT_WIDTH)
-    expect(size.height).toBe(274)
+    expect(size.height).toBe(200)
     expect(size.clamped).toBe(false)
   })
 
-  it('支持常用预设宽度', () => {
-    expect(exportSize(5, 1920)).toMatchObject({ width: 1920, height: 384 })
-    expect(exportSize(3.7333, 4096)).toMatchObject({ width: 4096, height: 1097 })
+  it('支持四档预设宽度', () => {
+    expect(exportSize(5, 1000)).toMatchObject({ width: 1000, height: 200 })
+    expect(exportSize(3.7333, 4000)).toMatchObject({ width: 4000, height: 1071 })
+    expect(exportSize(3.7333, 8000)).toMatchObject({ width: 8000, height: 2143, clamped: false })
+  })
+
+  it('四档预设在所有模板比例下都不被夹取', () => {
+    for (const ratio of [5, 5.5, 5.15, 5.2, 5.1, 5.4578, 3.7333]) {
+      for (const preset of [1000, 2000, 4000, 8000]) {
+        expect(exportSize(ratio, preset), `${ratio}@${preset}`).toMatchObject({
+          width: preset,
+          clamped: false,
+        })
+      }
+    }
   })
 
   it('宽度低于下限时夹取', () => {
@@ -32,12 +43,6 @@ describe('导出尺寸', () => {
     const size = exportSize(5, 99999)
     expect(size.width).toBe(MAX_EXPORT_WIDTH)
     expect(size.reason).toBe('max')
-  })
-
-  it('画布面积超过 16M 时回退', () => {
-    const size = exportSize(3.7333, 8192)
-    expect(size.width * size.height).toBeLessThanOrEqual(MAX_EXPORT_AREA)
-    expect(size.reason).toBe('area')
   })
 
   it('非法输入回退默认值', () => {

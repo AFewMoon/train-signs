@@ -46,9 +46,9 @@ function byId(box: Box, id: string): Box {
 describe('标准/套跑（Plate0）默认布局', () => {
   const box = render()
 
-  it('画布为 1370×274（5:1）', () => {
-    expect(box.w).toBe(1370)
-    expect(box.h).toBeCloseTo(274, 3)
+  it('画布为 1000×200（5:1）', () => {
+    expect(box.w).toBe(1000)
+    expect(box.h).toBeCloseTo(200, 3)
   })
 
   it('默认值来自封面示例', () => {
@@ -76,18 +76,18 @@ describe('标准/套跑（Plate0）默认布局', () => {
 
   it('路徽位于中间 140.27 单位区域且为默认路徽', () => {
     const region = byId(box, 'rl_icon')
-    expect(region.w).toBeCloseTo((274 / 72) * 140.27, 3)
-    expect(region.x).toBeCloseTo((1370 - region.w) / 2, 3)
+    expect(region.w).toBeCloseTo((200 / 72) * 140.27, 3)
+    expect(region.x).toBeCloseTo((1000 - region.w) / 2, 3)
     const icon = byId(box, 'iv_icon')
     expect(icon.image?.src).toBe('icons/railway/ic_plate_01.png')
-    expect(icon.w).toBeCloseTo((274 / 72) * 52.27, 3)
+    expect(icon.w).toBeCloseTo((200 / 72) * 52.27, 3)
   })
 
   it('拼音栏贴底 5.54 单位、高 19.04 单位', () => {
     const bar = byId(box, 'tv_start_en')
-    const unit = 274 / 72
+    const unit = 200 / 72
     expect(bar.h).toBeCloseTo(unit * 19.04, 3)
-    expect(bar.y + bar.h).toBeCloseTo(274 - unit * 5.54, 3)
+    expect(bar.y + bar.h).toBeCloseTo(200 - unit * 5.54, 3)
   })
 })
 

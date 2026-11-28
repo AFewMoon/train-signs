@@ -83,4 +83,11 @@ describe('导出格式设置', () => {
     expect(settings.format).toBe('webp')
     expect(settings.exportWidth).toBe(1920)
   })
+
+  it('首次使用默认导出宽度为 1000', () => {
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => undefined })
+    const settings = loadSettings()
+    vi.unstubAllGlobals()
+    expect(settings.exportWidth).toBe(1000)
+  })
 })

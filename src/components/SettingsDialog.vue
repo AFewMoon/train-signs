@@ -10,7 +10,7 @@
         <fieldset class="setting-group">
           <legend>导出分辨率</legend>
           <p class="setting-hint">
-            高度按当前水牌比例自动计算。宽度范围 {{ MIN_EXPORT_WIDTH }}–{{ MAX_EXPORT_WIDTH }}px，画布面积不超过 1600 万像素。
+            高度按当前水牌比例自动计算。宽度范围 {{ MIN_EXPORT_WIDTH }}–{{ MAX_EXPORT_WIDTH }}px。
           </p>
           <div class="preset-row">
             <button
@@ -40,9 +40,7 @@
           </label>
           <p class="setting-hint size-preview">
             导出尺寸：<strong>{{ computedSize.width }} × {{ computedSize.height }} px</strong>
-            <span v-if="computedSize.clamped" class="clamp-note">
-              （已按限制调整为 {{ computedSize.reason === 'area' ? '面积上限' : '宽度范围' }}）
-            </span>
+            <span v-if="computedSize.clamped" class="clamp-note">（已按宽度范围调整）</span>
           </p>
         </fieldset>
 
@@ -88,7 +86,7 @@ import { MAX_EXPORT_WIDTH, MIN_EXPORT_WIDTH, exportSize } from '../plates/types'
 const props = defineProps<{ open: boolean; settings: Settings; ratio: number }>()
 const emit = defineEmits<{ close: []; 'update:settings': [Settings] }>()
 
-const widthPresets = [1370, 1920, 2560, 4096]
+const widthPresets = [1000, 2000, 4000, 8000]
 const draftWidth = ref(props.settings.exportWidth)
 watch(
   () => props.settings.exportWidth,
